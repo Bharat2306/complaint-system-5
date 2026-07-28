@@ -472,21 +472,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateStats() {
-    const total = complaintsList.length;
-    const pending = complaintsList.filter(c => c.status === 'Pending').length;
-    const progress = complaintsList.filter(c => c.status === 'In Progress' || c.status === 'Assigned').length;
-    const resolved = complaintsList.filter(c => c.status === 'Resolved' || c.status === 'Closed').length;
+    const sTotal = document.getElementById('statTotal');
+    const sPending = document.getElementById('statPending');
+    const sProgress = document.getElementById('statProgress');
+    const sResolved = document.getElementById('statResolved');
 
-    statTotal.textContent = total;
-    statPending.textContent = pending;
-    statProgress.textContent = progress;
-    statResolved.textContent = resolved;
+    const total = complaintsList.length;
+    const pending = complaintsList.filter(c => c && c.status === 'Pending').length;
+    const progress = complaintsList.filter(c => c && (c.status === 'In Progress' || c.status === 'Assigned')).length;
+    const resolved = complaintsList.filter(c => c && (c.status === 'Resolved' || c.status === 'Closed')).length;
+
+    if (sTotal) sTotal.textContent = total;
+    if (sPending) sPending.textContent = pending;
+    if (sProgress) sProgress.textContent = progress;
+    if (sResolved) sResolved.textContent = resolved;
   }
 
   function renderComplaintsGrid() {
-    const query = searchInput.value.toLowerCase().trim();
-    const cat = categoryFilter.value;
-    const stat = statusFilter.value;
+    const sInput = document.getElementById('searchInput');
+    const cFilter = document.getElementById('categoryFilter');
+    const stFilter = document.getElementById('statusFilter');
+    const cContainer = document.getElementById('complaintsContainer');
+
+    if (!cContainer) return;
+
+    const query = sInput ? sInput.value.toLowerCase().trim() : '';
+    const cat = cFilter ? cFilter.value : 'ALL';
+    const stat = stFilter ? stFilter.value : 'ALL';
     const assignedChoice = document.getElementById('assignedFilter') ? document.getElementById('assignedFilter').value : 'ALL';
 
     const filtered = complaintsList.filter(c => {
@@ -512,7 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (filtered.length === 0) {
-      complaintsContainer.innerHTML = `
+      cContainer.innerHTML = `
         <div style="grid-column: 1/-1; text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
           <i class="fa-solid fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
           <h3>No complaints found</h3>
@@ -522,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    complaintsContainer.innerHTML = filtered.map(c => {
+    cContainer.innerHTML = filtered.map(c => {
       const statusClass = `status-${c.status.toLowerCase().replace(/\s+/g, '')}`;
       const priorityClass = `priority-${c.priority.toLowerCase()}`;
       const expectedDate = getExpectedCompletionDate(c.createdAt, c.priority);
