@@ -372,39 +372,46 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtn.style.display = 'none';
   }
 
-  function showDashboard() {
+  window.showDashboard = function() {
+    if (!currentUser) return;
     document.documentElement.classList.add('user-logged-in');
-    authView.style.display = 'none';
-    dashboardView.style.display = 'block';
-    userBadge.style.display = 'flex';
-    logoutBtn.style.display = 'inline-flex';
+    if (authView) authView.style.display = 'none';
+    if (dashboardView) dashboardView.style.display = 'block';
+    if (userBadge) userBadge.style.display = 'flex';
+    if (logoutBtn) logoutBtn.style.display = 'inline-flex';
 
     // Populate navbar user info
-    userName.textContent = currentUser.name;
-    userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
-    userRole.textContent = currentUser.role.toUpperCase();
-    userRole.className = `role-tag ${currentUser.role}`;
+    const userNameStr = currentUser.name || 'User';
+    const userRoleStr = (currentUser.role || 'student').toLowerCase();
+
+    if (userName) userName.textContent = userNameStr;
+    if (userAvatar) userAvatar.textContent = userNameStr.charAt(0).toUpperCase();
+    if (userRole) {
+      userRole.textContent = userRoleStr.toUpperCase();
+      userRole.className = `role-tag ${userRoleStr}`;
+    }
 
     // Header greetings
-    if (currentUser.role === 'student') {
-      dashGreeting.textContent = `Welcome, ${currentUser.name.split(' ')[0]}! 👋`;
-      dashSubtitle.textContent = 'Track your complaints, upload evidence, and chat with technical support.';
-      studentActionContainer.style.display = 'block';
-    } else if (currentUser.role === 'admin') {
-      dashGreeting.textContent = `Admin Management Portal 🛡️`;
-      dashSubtitle.textContent = `Review all student complaints, assign staff technicians, and monitor resolution timelines.`;
-      studentActionContainer.style.display = 'none';
+    if (userRoleStr === 'student') {
+      const firstName = userNameStr.split(' ')[0] || 'Student';
+      if (dashGreeting) dashGreeting.textContent = `Welcome, ${firstName}! 👋`;
+      if (dashSubtitle) dashSubtitle.textContent = 'Track your complaints, upload evidence, and chat with technical support.';
+      if (studentActionContainer) studentActionContainer.style.display = 'block';
+    } else if (userRoleStr === 'admin') {
+      if (dashGreeting) dashGreeting.textContent = `Admin Management Portal 🛡️`;
+      if (dashSubtitle) dashSubtitle.textContent = `Review all student complaints, assign staff technicians, and monitor resolution timelines.`;
+      if (studentActionContainer) studentActionContainer.style.display = 'none';
     } else {
-      dashGreeting.textContent = `Staff Technician Portal 🛠️`;
-      dashSubtitle.textContent = `View assigned tasks, update complaint progress, and respond to student inquiries.`;
-      studentActionContainer.style.display = 'none';
+      if (dashGreeting) dashGreeting.textContent = `Staff Technician Portal 🛠️`;
+      if (dashSubtitle) dashSubtitle.textContent = `View assigned tasks, update complaint progress, and respond to student inquiries.`;
+      if (studentActionContainer) studentActionContainer.style.display = 'none';
     }
 
     const assignedFilter = document.getElementById('assignedFilter');
-    if (currentUser.role === 'staff' || currentUser.role === 'admin') {
+    if (userRoleStr === 'staff' || userRoleStr === 'admin') {
       if (assignedFilter) {
         assignedFilter.style.display = 'inline-block';
-        if (currentUser.role === 'staff') {
+        if (userRoleStr === 'staff') {
           assignedFilter.value = 'MY_ASSIGNED';
         }
       }
@@ -413,10 +420,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadComplaints();
-    if (currentUser.role !== 'student') {
+    if (userRoleStr !== 'student') {
       loadStaffDropdown();
     }
-  }
+  };
 
   function getExpectedCompletionDate(createdAt, priority) {
     const dt = new Date(createdAt);
