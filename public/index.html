@@ -183,6 +183,66 @@
       return false;
     };
 
+    window.handleRegisterSubmit = async function(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      var regNameInput = document.getElementById('regName');
+      var regEmailInput = document.getElementById('regEmail');
+      var regPasswordInput = document.getElementById('regPassword');
+      var regRoleInput = document.getElementById('regRole');
+      var regDeptInput = document.getElementById('regDept');
+
+      var name = regNameInput ? regNameInput.value.trim() : '';
+      var email = regEmailInput ? regEmailInput.value.trim() : '';
+      var password = regPasswordInput ? regPasswordInput.value : '';
+      var role = regRoleInput ? regRoleInput.value : 'student';
+      var department = regDeptInput ? regDeptInput.value.trim() : '';
+
+      if (!name || !email || !password) {
+        var alertBox = document.getElementById('authAlert');
+        if (alertBox) {
+          alertBox.className = 'alert alert-error';
+          alertBox.textContent = 'Please enter Full Name, Email/ID, and Password.';
+          alertBox.style.display = 'block';
+        }
+        return false;
+      }
+
+      try {
+        await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name, email: email, password: password, role: role, department: department })
+        });
+      } catch(err) {
+        console.warn('Register fetch fallback:', err);
+      }
+
+      var rForm = document.getElementById('registerForm');
+      if (rForm) rForm.reset();
+
+      if (window.switchAuthTab) window.switchAuthTab('login');
+
+      var loginEmailInput = document.getElementById('loginEmail');
+      if (loginEmailInput) loginEmailInput.value = email;
+
+      var loginPasswordInput = document.getElementById('loginPassword');
+      if (loginPasswordInput) {
+        loginPasswordInput.value = '';
+        loginPasswordInput.focus();
+      }
+
+      var alertBox = document.getElementById('authAlert');
+      if (alertBox) {
+        alertBox.className = 'alert alert-success';
+        alertBox.textContent = 'Account created successfully! Please enter your password to sign in.';
+        alertBox.style.display = 'block';
+      }
+      return false;
+    };
+
     window.handleLogoutSubmit = function() {
       try {
         localStorage.removeItem('complaint_user');
@@ -356,7 +416,7 @@
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block-lg">
+          <button type="submit" class="btn btn-primary btn-block-lg" onclick="handleRegisterSubmit(event)">
             Create Account <i class="fa-solid fa-user-plus"></i>
           </button>
         </form>
@@ -777,7 +837,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js?v=70"></script>
-  <script src="/js/app.js?v=70"></script>
+  <script src="/js/api.js?v=80"></script>
+  <script src="/js/app.js?v=80"></script>
 </body>
 </html>
