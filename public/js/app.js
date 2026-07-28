@@ -260,14 +260,24 @@ document.addEventListener('DOMContentLoaded', () => {
     showAuth();
   });
 
+  const clearAuthInputs = () => {
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    if (loginEmail) loginEmail.value = '';
+    if (loginPassword) loginPassword.value = '';
+    if (loginForm) loginForm.reset();
+    if (registerForm) registerForm.reset();
+  };
+
   function showAuth() {
     document.documentElement.classList.remove('user-logged-in');
     authView.style.display = 'block';
     dashboardView.style.display = 'none';
     userBadge.style.display = 'none';
     logoutBtn.style.display = 'none';
-    if (loginForm) loginForm.reset();
-    if (registerForm) registerForm.reset();
+    clearAuthInputs();
+    setTimeout(clearAuthInputs, 150);
+    setTimeout(clearAuthInputs, 400);
   }
 
   function showDashboard() {
