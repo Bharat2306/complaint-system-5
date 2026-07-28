@@ -376,6 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentUser) return;
 
     document.documentElement.classList.add('user-logged-in');
+
     const authViewEl = document.getElementById('authView');
     const dashboardViewEl = document.getElementById('dashboardView');
     const userBadgeEl = document.getElementById('userBadge');
@@ -386,31 +387,38 @@ document.addEventListener('DOMContentLoaded', () => {
     if (userBadgeEl) userBadgeEl.style.display = 'flex';
     if (logoutBtnEl) logoutBtnEl.style.display = 'inline-flex';
 
+    const userNameEl = document.getElementById('userName');
+    const userAvatarEl = document.getElementById('userAvatar');
+    const userRoleEl = document.getElementById('userRole');
+    const dashGreetingEl = document.getElementById('dashGreeting');
+    const dashSubtitleEl = document.getElementById('dashSubtitle');
+    const studentActionContainerEl = document.getElementById('studentActionContainer');
+
     // Populate navbar user info
     const userNameStr = currentUser.name || 'User';
     const userRoleStr = (currentUser.role || 'student').toLowerCase();
 
-    if (userName) userName.textContent = userNameStr;
-    if (userAvatar) userAvatar.textContent = userNameStr.charAt(0).toUpperCase();
-    if (userRole) {
-      userRole.textContent = userRoleStr.toUpperCase();
-      userRole.className = `role-tag ${userRoleStr}`;
+    if (userNameEl) userNameEl.textContent = userNameStr;
+    if (userAvatarEl) userAvatarEl.textContent = userNameStr.charAt(0).toUpperCase();
+    if (userRoleEl) {
+      userRoleEl.textContent = userRoleStr.toUpperCase();
+      userRoleEl.className = `role-tag ${userRoleStr}`;
     }
 
     // Header greetings
     if (userRoleStr === 'student') {
       const firstName = userNameStr.split(' ')[0] || 'Student';
-      if (dashGreeting) dashGreeting.textContent = `Welcome, ${firstName}! 👋`;
-      if (dashSubtitle) dashSubtitle.textContent = 'Track your complaints, upload evidence, and chat with technical support.';
-      if (studentActionContainer) studentActionContainer.style.display = 'block';
+      if (dashGreetingEl) dashGreetingEl.textContent = `Welcome, ${firstName}! 👋`;
+      if (dashSubtitleEl) dashSubtitleEl.textContent = 'Track your complaints, upload evidence, and chat with technical support.';
+      if (studentActionContainerEl) studentActionContainerEl.style.display = 'block';
     } else if (userRoleStr === 'admin') {
-      if (dashGreeting) dashGreeting.textContent = `Admin Management Portal 🛡️`;
-      if (dashSubtitle) dashSubtitle.textContent = `Review all student complaints, assign staff technicians, and monitor resolution timelines.`;
-      if (studentActionContainer) studentActionContainer.style.display = 'none';
+      if (dashGreetingEl) dashGreetingEl.textContent = `Admin Management Portal 🛡️`;
+      if (dashSubtitleEl) dashSubtitleEl.textContent = `Review all student complaints, assign staff technicians, and monitor resolution timelines.`;
+      if (studentActionContainerEl) studentActionContainerEl.style.display = 'none';
     } else {
-      if (dashGreeting) dashGreeting.textContent = `Staff Technician Portal 🛠️`;
-      if (dashSubtitle) dashSubtitle.textContent = `View assigned tasks, update complaint progress, and respond to student inquiries.`;
-      if (studentActionContainer) studentActionContainer.style.display = 'none';
+      if (dashGreetingEl) dashGreetingEl.textContent = `Staff Technician Portal 🛠️`;
+      if (dashSubtitleEl) dashSubtitleEl.textContent = `View assigned tasks, update complaint progress, and respond to student inquiries.`;
+      if (studentActionContainerEl) studentActionContainerEl.style.display = 'none';
     }
 
     const assignedFilter = document.getElementById('assignedFilter');
