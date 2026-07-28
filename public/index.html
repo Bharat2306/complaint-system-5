@@ -132,20 +132,26 @@
       }
 
       var lowerEmail = email.toLowerCase();
-      var detectedRole = 'student';
-      if (lowerEmail.includes('admin') || lowerEmail.includes('adm')) {
-        detectedRole = 'admin';
-      } else if (lowerEmail.includes('staff') || lowerEmail.startsWith('stf') || lowerEmail.startsWith('emp') || lowerEmail.includes('tech')) {
-        detectedRole = 'staff';
+      var storedRole = sessionStorage.getItem('reg_user_role_' + lowerEmail);
+      var storedName = sessionStorage.getItem('reg_user_name_' + lowerEmail);
+      var storedDept = sessionStorage.getItem('reg_user_dept_' + lowerEmail);
+
+      var detectedRole = storedRole || 'student';
+      if (!storedRole) {
+        if (lowerEmail.includes('admin') || lowerEmail.includes('adm')) {
+          detectedRole = 'admin';
+        } else if (lowerEmail.includes('staff') || lowerEmail.startsWith('stf') || lowerEmail.startsWith('emp') || lowerEmail.includes('tech')) {
+          detectedRole = 'staff';
+        }
       }
 
       var userObj = {
         id: 'usr_' + Date.now(),
-        name: email.split('@')[0].replace(/[._]/g, ' '),
+        name: storedName || (email.split('@')[0].replace(/[._]/g, ' ')),
         email: email,
         staffId: detectedRole === 'staff' ? email : '',
         role: detectedRole,
-        department: detectedRole === 'staff' ? 'Maintenance' : (detectedRole === 'admin' ? 'Administration' : 'Block B-304')
+        department: storedDept || (detectedRole === 'staff' ? 'Maintenance' : (detectedRole === 'admin' ? 'Administration' : 'Block B-304'))
       };
 
       try {
@@ -211,6 +217,10 @@
       }
 
       try {
+        sessionStorage.setItem('reg_user_role_' + email.toLowerCase(), role);
+        sessionStorage.setItem('reg_user_name_' + email.toLowerCase(), name);
+        sessionStorage.setItem('reg_user_dept_' + email.toLowerCase(), department);
+
         await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -837,7 +847,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js?v=80"></script>
-  <script src="/js/app.js?v=80"></script>
+  <script src="/js/api.js?v=90"></script>
+  <script src="/js/app.js?v=90"></script>
 </body>
 </html>
