@@ -15,7 +15,10 @@ const seedDefaultData = async () => {
       { name: 'Bharat Rajput', email: 'br232006rajput@gmail.com', password: userPass, role: 'student', department: 'Block B-304' },
       { name: 'Demo Student', email: 'student@campus.edu', password: studentPass, role: 'student', department: 'Block A-101' },
       { name: 'Campus Admin', email: 'admin@campus.edu', password: adminPass, role: 'admin', department: 'Administration' },
-      { name: 'Tech Staff', email: 'staff@campus.edu', staffId: 'STF-101', password: staffPass, role: 'staff', department: 'Electrical' }
+      { name: 'Campus Admin', email: 'admin', password: adminPass, role: 'admin', department: 'Administration' },
+      { name: 'Tech Staff', email: 'staff@campus.edu', staffId: 'STF-101', password: staffPass, role: 'staff', department: 'Electrical' },
+      { name: 'Tech Staff', email: 'staff123', staffId: 'staff123', password: staffPass, role: 'staff', department: 'Electrical' },
+      { name: 'Tech Staff', email: 'staff', staffId: 'staff', password: staffPass, role: 'staff', department: 'Electrical' }
     ];
 
     if (getMongoStatus()) {
@@ -44,7 +47,7 @@ const findUserByEmail = async (identifier) => {
   const escapedKey = searchKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
   if (getMongoStatus()) {
-    return await MongoUser.findOne({
+    let user = await MongoUser.findOne({
       $or: [
         { email: searchKey },
         { email: new RegExp('^' + escapedKey + '(@.*)?$', 'i') },
@@ -53,6 +56,10 @@ const findUserByEmail = async (identifier) => {
         { staffId: new RegExp('^' + escapedKey + '$', 'i') }
       ]
     });
+    if (!user) {
+      user = await MongoUser.findOne({ email: new RegExp(escapedKey, 'i') });
+    }
+    return user;
   } else {
     return memoryUsers.find(u => {
       if (!u) return false;
@@ -63,7 +70,8 @@ const findUserByEmail = async (identifier) => {
         uEmail === searchKey ||
         emailPrefix === searchKey ||
         uStaffId === searchKey ||
-        uStaffId === identifier.trim().toLowerCase()
+        uStaffId === identifier.trim().toLowerCase() ||
+        uEmail.includes(searchKey)
       );
     });
   }
