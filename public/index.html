@@ -175,22 +175,12 @@
     };
 
     window.handleLogoutSubmit = function() {
-      localStorage.removeItem('complaint_user');
+      try {
+        localStorage.removeItem('complaint_user');
+        sessionStorage.clear();
+      } catch(e) {}
       document.documentElement.classList.remove('user-logged-in');
-
-      var authViewEl = document.getElementById('authView');
-      var dashboardViewEl = document.getElementById('dashboardView');
-      var userBadgeEl = document.getElementById('userBadge');
-      var logoutBtnEl = document.getElementById('logoutBtn');
-      var notifWrapperEl = document.getElementById('notifWrapper');
-
-      if (authViewEl) authViewEl.style.display = 'block';
-      if (dashboardViewEl) dashboardViewEl.style.display = 'none';
-      if (userBadgeEl) userBadgeEl.style.display = 'none';
-      if (logoutBtnEl) logoutBtnEl.style.display = 'none';
-      if (notifWrapperEl) notifWrapperEl.style.display = 'none';
-
-      if (window.switchAuthTab) window.switchAuthTab('login');
+      window.location.href = '/';
     };
   </script>
 </head>
@@ -778,7 +768,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js?v=50"></script>
-  <script src="/js/app.js?v=50"></script>
+  <script src="/js/api.js?v=60"></script>
+  <script src="/js/app.js?v=60"></script>
 </body>
 </html>

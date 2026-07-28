@@ -396,13 +396,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  logoutBtn.addEventListener('click', () => {
-    currentUser = null;
-    localStorage.removeItem('complaint_user');
-    document.documentElement.classList.remove('user-logged-in');
-    if (chatPollInterval) clearInterval(chatPollInterval);
-    showAuth();
-  });
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', (e) => {
+      if (e) e.preventDefault();
+      if (window.handleLogoutSubmit) {
+        window.handleLogoutSubmit();
+      } else {
+        localStorage.removeItem('complaint_user');
+        window.location.href = '/';
+      }
+    });
+  }
 
   function showAuth() {
     document.documentElement.classList.remove('user-logged-in');
