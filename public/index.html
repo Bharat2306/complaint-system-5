@@ -45,7 +45,7 @@
       <div class="brand-icon-box">
         <i class="fa-solid fa-shield-halved"></i>
       </div>
-      <span>FixPoint <small style="font-size: 0.65rem; color: var(--primary); text-transform: uppercase; font-weight: 800;">Smart Portal</small></span>
+      <span>Smart Complaint Management System</span>
     </a>
 
     <div class="nav-actions">
@@ -85,213 +85,147 @@
   <!-- Application Container -->
   <main class="app-container">
 
-    <!-- ==================== FULL-SCREEN SPLIT AUTH VIEW ==================== -->
-    <section id="authView" class="auth-fullscreen-container">
-      <!-- Left Showcase Panel (Full Height) -->
-      <div class="auth-showcase-panel">
-        <div class="showcase-glow-orb glow-orb-1"></div>
-        <div class="showcase-glow-orb glow-orb-2"></div>
-        
-        <div class="showcase-content">
-          <div class="showcase-badge">
-            <span class="pulse-dot"></span> Campus Helpdesk & Support
-          </div>
-          
-          <h1 class="showcase-title">Campus Maintenance & Complaint Portal</h1>
-          <p class="showcase-subtitle">A transparent platform for campus students, faculty, and staff to register complaints, track resolution progress, and chat directly with technicians.</p>
+    <!-- ==================== ELEGANT CENTERED AUTH VIEW ==================== -->
+    <section id="authView" class="auth-centered-container">
+      
+      <!-- Hero Title Header above Form Card -->
+      <div class="auth-hero-header">
+        <div class="auth-hero-badge">
+          <i class="fa-solid fa-shield-halved"></i> Campus Support Portal
+        </div>
+        <h1 class="auth-hero-title">Smart Complaint Management System</h1>
+        <p class="auth-hero-subtitle">Report maintenance issues, track repair progress step-by-step, and communicate directly with staff.</p>
+      </div>
 
-          <!-- Real Campus Department Service Badges -->
-          <div class="showcase-stats-grid">
-            <div class="showcase-stat-card">
-              <div class="stat-card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
-                <i class="fa-solid fa-bolt"></i>
-              </div>
-              <div>
-                <div class="stat-card-num">Electrical & Power</div>
-                <div class="stat-card-txt">Fans, Lights & Outlets</div>
-              </div>
-            </div>
-
-            <div class="showcase-stat-card">
-              <div class="stat-card-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
-                <i class="fa-solid fa-droplet"></i>
-              </div>
-              <div>
-                <div class="stat-card-num">Plumbing & Water</div>
-                <div class="stat-card-txt">Taps, Leaks & Washrooms</div>
-              </div>
-            </div>
-
-            <div class="showcase-stat-card">
-              <div class="stat-card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
-                <i class="fa-solid fa-wifi"></i>
-              </div>
-              <div>
-                <div class="stat-card-num">Wi-Fi & IT Support</div>
-                <div class="stat-card-txt">Network & Lab Systems</div>
-              </div>
-            </div>
-
-            <div class="showcase-stat-card">
-              <div class="stat-card-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
-                <i class="fa-solid fa-screwdriver-wrench"></i>
-              </div>
-              <div>
-                <div class="stat-card-num">Hostel & Fittings</div>
-                <div class="stat-card-txt">Doors, Locks & Desks</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Feature Cards List with Real Workflow Focus -->
-          <div class="showcase-features-list">
-            <div class="feature-row">
-              <div class="feature-icon-box"><i class="fa-solid fa-camera"></i></div>
-              <div>
-                <strong>Attach Photo & Video Evidence</strong>
-                <p>Upload quick photos or short video clips with your ticket so staff can diagnose the issue before arriving.</p>
-              </div>
-            </div>
-
-            <div class="feature-row">
-              <div class="feature-icon-box"><i class="fa-solid fa-comments"></i></div>
-              <div>
-                <strong>Direct Technician Chat & Real-Time Tracking</strong>
-                <p>Message assigned staff directly and get step-by-step updates from Pending to Resolved.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Human Student Feedback Highlight Card -->
-          <div class="showcase-testimonial-box">
-            <div class="testimonial-header">
-              <i class="fa-solid fa-quote-left"></i>
-              <span>Student Review</span>
-            </div>
-            <p class="testimonial-text">"Reported a broken hostel fan in the morning, and the electrical staff fixed it by afternoon. Easy to track!"</p>
-            <div class="testimonial-author">— Rahul M., Computer Science (Hostel Block B)</div>
-          </div>
+      <!-- Main Centered Auth Card -->
+      <div class="auth-card-wrapper">
+        <div class="auth-header-text">
+          <h2 id="authFormTitle">Welcome Back 👋</h2>
+          <p id="authFormSubtitle">Sign in to manage and track your campus complaints</p>
         </div>
 
-        <div class="showcase-footer">
-          <span>&copy; 2026 Campus Support Management</span>
-          <span><i class="fa-solid fa-shield-halved"></i> Secure Student Portal</span>
+        <!-- Alert Notification Box -->
+        <div id="authAlert" style="display: none;"></div>
+
+        <!-- Auth Tabs -->
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="tabLoginBtn">
+            <i class="fa-solid fa-right-to-bracket"></i> Login
+          </button>
+          <button class="auth-tab-btn" id="tabRegisterBtn">
+            <i class="fa-solid fa-user-plus"></i> Register
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label">Campus Email / Staff ID</label>
+            <div class="input-with-icon">
+              <input type="text" class="form-input" id="loginEmail" placeholder="student@campus.edu or STF-101" required>
+              <i class="fa-solid fa-user-tag"></i>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-with-icon">
+              <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
+              <i class="fa-solid fa-lock"></i>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block-lg">
+            Sign In to Portal <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </form>
+
+        <!-- Sign Up Form (hidden by default) -->
+        <form id="registerForm" style="display: none;">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <div class="input-with-icon">
+              <input type="text" class="form-input" id="regName" placeholder="e.g. Aarav Sharma" required>
+              <i class="fa-regular fa-user"></i>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" id="regEmailLabel">Campus Email</label>
+            <div class="input-with-icon">
+              <input type="text" class="form-input" id="regEmail" placeholder="student@campus.edu" required>
+              <i class="fa-regular fa-envelope" id="regEmailIcon"></i>
+            </div>
+          </div>
+
+          <!-- Role Selector Cards -->
+          <div class="form-group">
+            <label class="form-label">Select Account Type</label>
+            <input type="hidden" id="regRole" value="student">
+            <div class="role-cards-grid">
+              <div class="role-card-option selected" data-role="student">
+                <div class="role-card-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="role-card-label">Student</div>
+              </div>
+              <div class="role-card-option" data-role="staff">
+                <div class="role-card-icon"><i class="fa-solid fa-wrench"></i></div>
+                <div class="role-card-label">Staff</div>
+              </div>
+              <div class="role-card-option" data-role="admin">
+                <div class="role-card-icon"><i class="fa-solid fa-user-shield"></i></div>
+                <div class="role-card-label">Admin</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" id="deptFormGroup">
+            <label class="form-label">Hostel Block / Room No</label>
+            <div class="input-with-icon">
+              <input type="text" class="form-input" id="regDept" placeholder="e.g. Hostel Block B-304">
+              <i class="fa-solid fa-building-user"></i>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Create Password</label>
+            <div class="input-with-icon">
+              <input type="password" class="form-input" id="regPassword" placeholder="••••••••" required>
+              <i class="fa-solid fa-lock"></i>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block-lg">
+            Create Account <i class="fa-solid fa-user-plus"></i>
+          </button>
+        </form>
+
+        <!-- Quick Demo Account Chips -->
+        <div class="quick-demo-section">
+          <div class="demo-title"><i class="fa-solid fa-bolt" style="color: var(--primary);"></i> One-Click Demo Login:</div>
+          <div class="demo-btn-group">
+            <button class="demo-chip" id="demoStudentBtn"><i class="fa-solid fa-graduation-cap"></i> Student Demo</button>
+            <button class="demo-chip" id="demoAdminBtn"><i class="fa-solid fa-user-shield"></i> Admin Demo</button>
+            <button class="demo-chip" id="demoStaffBtn"><i class="fa-solid fa-wrench"></i> Staff Demo</button>
+          </div>
         </div>
       </div>
 
-      <!-- Right Form Panel (Full Height) -->
-      <div class="auth-form-panel">
-        <div class="form-panel-wrapper">
-          <div class="auth-header-text">
-            <h2 id="authFormTitle">Welcome Back 👋</h2>
-            <p id="authFormSubtitle">Sign in to manage and track your campus complaints</p>
-          </div>
-
-          <!-- Alert Notification Box -->
-          <div id="authAlert" style="display: none;"></div>
-
-          <div class="auth-tabs">
-            <button class="auth-tab-btn active" id="tabLoginBtn">
-              <i class="fa-solid fa-right-to-bracket"></i> Login
-            </button>
-            <button class="auth-tab-btn" id="tabRegisterBtn">
-              <i class="fa-solid fa-user-plus"></i> Register
-            </button>
-          </div>
-
-          <!-- Login Form -->
-          <form id="loginForm">
-            <div class="form-group">
-              <label class="form-label">Campus Email / Staff ID</label>
-              <div class="input-with-icon">
-                <input type="text" class="form-input" id="loginEmail" placeholder="student@campus.edu or STF-101" required>
-                <i class="fa-solid fa-user-tag"></i>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Password</label>
-              <div class="input-with-icon">
-                <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
-                <i class="fa-solid fa-lock"></i>
-              </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-block-lg">
-              Sign In to Portal <i class="fa-solid fa-arrow-right"></i>
-            </button>
-          </form>
-
-          <!-- Sign Up Form (hidden by default) -->
-          <form id="registerForm" style="display: none;">
-            <div class="form-group">
-              <label class="form-label">Full Name</label>
-              <div class="input-with-icon">
-                <input type="text" class="form-input" id="regName" placeholder="e.g. Aarav Sharma" required>
-                <i class="fa-regular fa-user"></i>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" id="regEmailLabel">Campus Email</label>
-              <div class="input-with-icon">
-                <input type="text" class="form-input" id="regEmail" placeholder="student@campus.edu" required>
-                <i class="fa-regular fa-envelope" id="regEmailIcon"></i>
-              </div>
-            </div>
-
-            <!-- Role Selector Cards -->
-            <div class="form-group">
-              <label class="form-label">Select Account Type</label>
-              <input type="hidden" id="regRole" value="student">
-              <div class="role-cards-grid">
-                <div class="role-card-option selected" data-role="student">
-                  <div class="role-card-icon"><i class="fa-solid fa-graduation-cap"></i></div>
-                  <div class="role-card-label">Student</div>
-                </div>
-                <div class="role-card-option" data-role="staff">
-                  <div class="role-card-icon"><i class="fa-solid fa-wrench"></i></div>
-                  <div class="role-card-label">Staff</div>
-                </div>
-                <div class="role-card-option" data-role="admin">
-                  <div class="role-card-icon"><i class="fa-solid fa-user-shield"></i></div>
-                  <div class="role-card-label">Admin</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group" id="deptFormGroup">
-              <label class="form-label">Hostel Block / Room No</label>
-              <div class="input-with-icon">
-                <input type="text" class="form-input" id="regDept" placeholder="e.g. Hostel Block B-304">
-                <i class="fa-solid fa-building-user"></i>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Create Password</label>
-              <div class="input-with-icon">
-                <input type="password" class="form-input" id="regPassword" placeholder="••••••••" required>
-                <i class="fa-solid fa-lock"></i>
-              </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-block-lg">
-              Create Account <i class="fa-solid fa-user-plus"></i>
-            </button>
-          </form>
-
-          <!-- Quick Demo Account Chips -->
-          <div class="quick-demo-section">
-            <div class="demo-title"><i class="fa-solid fa-bolt" style="color: var(--primary);"></i> One-Click Demo Login:</div>
-            <div class="demo-btn-group">
-              <button class="demo-chip" id="demoStudentBtn"><i class="fa-solid fa-graduation-cap"></i> Student Demo</button>
-              <button class="demo-chip" id="demoAdminBtn"><i class="fa-solid fa-user-shield"></i> Admin Demo</button>
-              <button class="demo-chip" id="demoStaffBtn"><i class="fa-solid fa-wrench"></i> Staff Demo</button>
-            </div>
-          </div>
+      <!-- Feature Highlights Bar below Auth Card -->
+      <div class="auth-features-bar">
+        <div class="auth-feature-item">
+          <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i>
+          <span>Fast Maintenance Response</span>
+        </div>
+        <div class="auth-feature-item">
+          <i class="fa-solid fa-camera" style="color: #38bdf8;"></i>
+          <span>Photo & Video Evidence</span>
+        </div>
+        <div class="auth-feature-item">
+          <i class="fa-solid fa-comments" style="color: #10b981;"></i>
+          <span>Direct Technician Chat</span>
         </div>
       </div>
+
     </section>
 
     <!-- ==================== DASHBOARD VIEW ==================== -->
