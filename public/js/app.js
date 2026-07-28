@@ -322,7 +322,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Direct login into Dashboard!
         currentUser = res.user;
         localStorage.setItem('complaint_user', JSON.stringify(currentUser));
-        if (window.showDashboard) window.showDashboard();
+        document.documentElement.classList.add('user-logged-in');
+
+        const authViewEl = document.getElementById('authView');
+        const dashboardViewEl = document.getElementById('dashboardView');
+        if (authViewEl) authViewEl.style.display = 'none';
+        if (dashboardViewEl) dashboardViewEl.style.display = 'block';
+
+        showDashboard();
+
         const rForm = document.getElementById('registerForm');
         if (rForm) rForm.reset();
       } else {
