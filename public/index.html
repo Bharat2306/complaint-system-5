@@ -15,7 +15,7 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="/css/style.css">
 
-  <!-- Instant Session Guard (Prevents login screen flicker on refresh) -->
+  <!-- Instant Session Guard & Tab Switcher (Prevents delay or unresponsiveness) -->
   <script>
     (function() {
       try {
@@ -28,6 +28,89 @@
         }
       } catch(e) {}
     })();
+
+    function switchAuthTab(tabName) {
+      var tLogin = document.getElementById('tabLoginBtn');
+      var tRegister = document.getElementById('tabRegisterBtn');
+      var fLogin = document.getElementById('loginForm');
+      var fRegister = document.getElementById('registerForm');
+      var title = document.getElementById('authFormTitle');
+      var subtitle = document.getElementById('authFormSubtitle');
+      var alertBox = document.getElementById('authAlert');
+
+      if (alertBox) alertBox.style.display = 'none';
+
+      if (tabName === 'register') {
+        if (tRegister) tRegister.className = 'auth-tab-btn active';
+        if (tLogin) tLogin.className = 'auth-tab-btn';
+        if (fRegister) fRegister.style.display = 'block';
+        if (fLogin) fLogin.style.display = 'none';
+        if (title) title.innerText = 'Create Account 🚀';
+        if (subtitle) subtitle.innerText = 'Sign up to raise & track campus complaints';
+      } else {
+        if (tLogin) tLogin.className = 'auth-tab-btn active';
+        if (tRegister) tRegister.className = 'auth-tab-btn';
+        if (fLogin) fLogin.style.display = 'block';
+        if (fRegister) fRegister.style.display = 'none';
+        if (title) title.innerText = 'Welcome Back 👋';
+        if (subtitle) subtitle.innerText = 'Sign in to access your complaint dashboard';
+      }
+    }
+
+    function selectRegRole(role) {
+      var regRoleInput = document.getElementById('regRole');
+      var regEmailLabel = document.getElementById('regEmailLabel');
+      var regEmailInput = document.getElementById('regEmail');
+      var regEmailIcon = document.getElementById('regEmailIcon');
+      var deptFormGroup = document.getElementById('deptFormGroup');
+      var regDeptLabel = document.getElementById('regDeptLabel');
+      var regDeptInput = document.getElementById('regDept');
+
+      var cardStudent = document.getElementById('roleCardStudent');
+      var cardStaff = document.getElementById('roleCardStaff');
+      var cardAdmin = document.getElementById('roleCardAdmin');
+
+      if (cardStudent) cardStudent.className = 'role-card-option';
+      if (cardStaff) cardStaff.className = 'role-card-option';
+      if (cardAdmin) cardAdmin.className = 'role-card-option';
+
+      if (regRoleInput) regRoleInput.value = role;
+
+      if (role === 'staff') {
+        if (cardStaff) cardStaff.className = 'role-card-option selected';
+        if (regEmailLabel) regEmailLabel.innerText = 'Staff Unique ID';
+        if (regEmailInput) {
+          regEmailInput.placeholder = 'e.g. STF-101 / EMP-502';
+          regEmailInput.type = 'text';
+        }
+        if (regEmailIcon) regEmailIcon.className = 'fa-solid fa-id-card';
+        if (deptFormGroup) deptFormGroup.style.display = 'block';
+        if (regDeptLabel) regDeptLabel.innerText = 'Department / Specialization';
+        if (regDeptInput) regDeptInput.placeholder = 'e.g. Electrical, Plumbing, IT Support';
+      } else if (role === 'admin') {
+        if (cardAdmin) cardAdmin.className = 'role-card-option selected';
+        if (regEmailLabel) regEmailLabel.innerText = 'Admin Email';
+        if (regEmailInput) {
+          regEmailInput.placeholder = 'e.g. admin@campus.edu';
+          regEmailInput.type = 'email';
+        }
+        if (regEmailIcon) regEmailIcon.className = 'fa-solid fa-user-shield';
+        if (deptFormGroup) deptFormGroup.style.display = 'block';
+        if (regDeptLabel) regDeptLabel.innerText = 'Admin Office / Department';
+        if (regDeptInput) regDeptInput.placeholder = 'e.g. Chief Warden Office, IT Admin';
+      } else {
+        if (cardStudent) cardStudent.className = 'role-card-option selected';
+        if (regEmailLabel) regEmailLabel.innerText = 'University Email';
+        if (regEmailInput) {
+          regEmailInput.placeholder = 'e.g. student@campus.edu';
+          regEmailInput.type = 'email';
+        }
+        if (regEmailIcon) regEmailIcon.className = 'fa-regular fa-envelope';
+        if (deptFormGroup) deptFormGroup.style.display = 'block';
+        if (regDeptLabel) regDeptLabel.innerText = 'Hostel Block / Room No';
+        if (regDeptInput) regDeptInput.placeholder = 'e.g. Hostel Block B-304';
+      }
+    }
   </script>
 </head>
 <body>
