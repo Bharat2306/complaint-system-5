@@ -27,6 +27,51 @@ window.switchAuthTab = function(tabName) {
     if (title) title.textContent = 'Welcome Back 👋';
     if (subtitle) subtitle.textContent = 'Sign in to access your complaint dashboard';
   }
+// Global Role Selector Function (Top-Level Scope)
+window.selectRegRole = function(role) {
+  const regRoleInput = document.getElementById('regRole');
+  const regEmailLabel = document.getElementById('regEmailLabel');
+  const regEmailInput = document.getElementById('regEmail');
+  const regEmailIcon = document.getElementById('regEmailIcon');
+  const deptFormGroup = document.getElementById('deptFormGroup');
+  const regDeptLabel = document.getElementById('regDeptLabel');
+  const regDeptInput = document.getElementById('regDept');
+
+  const cardStudent = document.getElementById('roleCardStudent');
+  const cardStaff = document.getElementById('roleCardStaff');
+  const cardAdmin = document.getElementById('roleCardAdmin');
+
+  if (cardStudent) cardStudent.classList.remove('selected');
+  if (cardStaff) cardStaff.classList.remove('selected');
+  if (cardAdmin) cardAdmin.classList.remove('selected');
+
+  if (regRoleInput) regRoleInput.value = role;
+
+  if (role === 'staff') {
+    if (cardStaff) cardStaff.classList.add('selected');
+    if (regEmailLabel) regEmailLabel.textContent = 'Staff Unique ID / Email';
+    if (regEmailInput) regEmailInput.placeholder = 'e.g. STF-101 or staff@campus.edu';
+    if (regEmailIcon) regEmailIcon.className = 'fa-solid fa-id-card';
+    if (deptFormGroup) deptFormGroup.style.display = 'block';
+    if (regDeptLabel) regDeptLabel.textContent = 'Department / Specialization';
+    if (regDeptInput) regDeptInput.placeholder = 'e.g. Electrical, Plumbing, IT Support';
+  } else if (role === 'admin') {
+    if (cardAdmin) cardAdmin.classList.add('selected');
+    if (regEmailLabel) regEmailLabel.textContent = 'Admin Email / ID';
+    if (regEmailInput) regEmailInput.placeholder = 'e.g. admin@campus.edu or ADM-101';
+    if (regEmailIcon) regEmailIcon.className = 'fa-solid fa-user-shield';
+    if (deptFormGroup) deptFormGroup.style.display = 'block';
+    if (regDeptLabel) regDeptLabel.textContent = 'Admin Office / Department';
+    if (regDeptInput) regDeptInput.placeholder = 'e.g. Chief Warden Office, IT Admin';
+  } else {
+    if (cardStudent) cardStudent.classList.add('selected');
+    if (regEmailLabel) regEmailLabel.textContent = 'Campus Email / Student Roll No';
+    if (regEmailInput) regEmailInput.placeholder = 'e.g. student@campus.edu or 21CS001';
+    if (regEmailIcon) regEmailIcon.className = 'fa-regular fa-envelope';
+    if (deptFormGroup) deptFormGroup.style.display = 'block';
+    if (regDeptLabel) regDeptLabel.textContent = 'Hostel Block / Room No';
+    if (regDeptInput) regDeptInput.placeholder = 'e.g. Hostel Block B-304';
+  }
 };
 
 document.addEventListener('DOMContentLoaded', () => {

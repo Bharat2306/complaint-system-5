@@ -166,15 +166,15 @@
             <label class="form-label">Select Account Type</label>
             <input type="hidden" id="regRole" value="student">
             <div class="role-cards-grid">
-              <div class="role-card-option selected" data-role="student">
+              <div class="role-card-option selected" id="roleCardStudent" data-role="student" onclick="selectRegRole('student')">
                 <div class="role-card-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                 <div class="role-card-label">Student</div>
               </div>
-              <div class="role-card-option" data-role="staff">
+              <div class="role-card-option" id="roleCardStaff" data-role="staff" onclick="selectRegRole('staff')">
                 <div class="role-card-icon"><i class="fa-solid fa-wrench"></i></div>
-                <div class="role-card-label">Staff</div>
+                <div class="role-card-label">Staff / Tech</div>
               </div>
-              <div class="role-card-option" data-role="admin">
+              <div class="role-card-option" id="roleCardAdmin" data-role="admin" onclick="selectRegRole('admin')">
                 <div class="role-card-icon"><i class="fa-solid fa-user-shield"></i></div>
                 <div class="role-card-label">Admin</div>
               </div>
@@ -182,7 +182,7 @@
           </div>
 
           <div class="form-group" id="deptFormGroup">
-            <label class="form-label">Hostel Block / Room No</label>
+            <label class="form-label" id="regDeptLabel">Hostel Block / Room No</label>
             <div class="input-with-icon">
               <input type="text" class="form-input" id="regDept" placeholder="e.g. Hostel Block B-304">
               <i class="fa-solid fa-building-user"></i>
