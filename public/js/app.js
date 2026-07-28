@@ -319,20 +319,26 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await API.register(userData);
       if (res.success) {
-        // Direct login into Dashboard!
-        currentUser = res.user;
-        localStorage.setItem('complaint_user', JSON.stringify(currentUser));
-        document.documentElement.classList.add('user-logged-in');
-
-        const authViewEl = document.getElementById('authView');
-        const dashboardViewEl = document.getElementById('dashboardView');
-        if (authViewEl) authViewEl.style.display = 'none';
-        if (dashboardViewEl) dashboardViewEl.style.display = 'block';
-
-        showDashboard();
-
+        // Reset signup form
         const rForm = document.getElementById('registerForm');
         if (rForm) rForm.reset();
+
+        // Redirect UI to Login Tab
+        if (window.switchAuthTab) window.switchAuthTab('login');
+
+        // Pre-fill login email/ID input
+        const loginEmailInput = document.getElementById('loginEmail');
+        if (loginEmailInput) {
+          loginEmailInput.value = email;
+        }
+
+        const loginPasswordInput = document.getElementById('loginPassword');
+        if (loginPasswordInput) {
+          loginPasswordInput.value = '';
+          loginPasswordInput.focus();
+        }
+
+        showAlert('Account created successfully! Please enter your password to sign in.', 'success');
       } else {
         showAlert(res.message || 'Registration failed.', 'error');
       }
