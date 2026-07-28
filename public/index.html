@@ -191,10 +191,10 @@
 
         <!-- Auth Tabs -->
         <div class="auth-tabs">
-          <button type="button" class="auth-tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">
+          <button type="button" class="auth-tab-btn active" id="tabLoginBtn" onclick="document.getElementById('loginForm').style.display='block'; document.getElementById('registerForm').style.display='none'; this.classList.add('active'); document.getElementById('tabRegisterBtn').classList.remove('active'); switchAuthTab('login');">
             <i class="fa-solid fa-right-to-bracket"></i> Login
           </button>
-          <button type="button" class="auth-tab-btn" id="tabRegisterBtn" onclick="switchAuthTab('register')">
+          <button type="button" class="auth-tab-btn" id="tabRegisterBtn" onclick="document.getElementById('registerForm').style.display='block'; document.getElementById('loginForm').style.display='none'; this.classList.add('active'); document.getElementById('tabLoginBtn').classList.remove('active'); switchAuthTab('register');">
             <i class="fa-solid fa-user-plus"></i> Sign Up
           </button>
         </div>
@@ -697,7 +697,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js"></script>
-  <script src="/js/app.js"></script>
+  <script src="/js/api.js?v=20"></script>
+  <script src="/js/app.js?v=20"></script>
 </body>
 </html>
