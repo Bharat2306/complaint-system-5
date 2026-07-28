@@ -173,6 +173,25 @@
       }
       return false;
     };
+
+    window.handleLogoutSubmit = function() {
+      localStorage.removeItem('complaint_user');
+      document.documentElement.classList.remove('user-logged-in');
+
+      var authViewEl = document.getElementById('authView');
+      var dashboardViewEl = document.getElementById('dashboardView');
+      var userBadgeEl = document.getElementById('userBadge');
+      var logoutBtnEl = document.getElementById('logoutBtn');
+      var notifWrapperEl = document.getElementById('notifWrapper');
+
+      if (authViewEl) authViewEl.style.display = 'block';
+      if (dashboardViewEl) dashboardViewEl.style.display = 'none';
+      if (userBadgeEl) userBadgeEl.style.display = 'none';
+      if (logoutBtnEl) logoutBtnEl.style.display = 'none';
+      if (notifWrapperEl) notifWrapperEl.style.display = 'none';
+
+      if (window.switchAuthTab) window.switchAuthTab('login');
+    };
   </script>
 </head>
 <body>
@@ -220,7 +239,7 @@
       </div>
 
       <!-- Logout Button (hidden pre-login) -->
-      <button class="btn btn-secondary btn-sm" id="logoutBtn" style="display: none;">
+      <button class="btn btn-secondary btn-sm" id="logoutBtn" style="display: none;" onclick="handleLogoutSubmit()">
         <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
       </button>
     </div>
@@ -759,7 +778,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js?v=40"></script>
-  <script src="/js/app.js?v=40"></script>
+  <script src="/js/api.js?v=50"></script>
+  <script src="/js/app.js?v=50"></script>
 </body>
 </html>
