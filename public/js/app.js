@@ -151,27 +151,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ==================== AUTHENTICATION & TAB SWITCHING ====================
 
-  // Switch to Login Tab
-  tabLoginBtn.addEventListener('click', () => {
-    tabLoginBtn.classList.add('active');
-    tabRegisterBtn.classList.remove('active');
-    loginForm.style.display = 'block';
-    registerForm.style.display = 'none';
-    authFormTitle.textContent = 'Welcome Back 👋';
-    authFormSubtitle.textContent = 'Sign in to access your complaint dashboard';
-    hideAlert();
-  });
+  // Global Tab Switcher Function
+  window.switchAuthTab = function(tabName) {
+    const tLogin = document.getElementById('tabLoginBtn');
+    const tRegister = document.getElementById('tabRegisterBtn');
+    const fLogin = document.getElementById('loginForm');
+    const fRegister = document.getElementById('registerForm');
+    const title = document.getElementById('authFormTitle');
+    const subtitle = document.getElementById('authFormSubtitle');
 
-  // Switch to Register Tab
-  tabRegisterBtn.addEventListener('click', () => {
-    tabRegisterBtn.classList.add('active');
-    tabLoginBtn.classList.remove('active');
-    registerForm.style.display = 'block';
-    loginForm.style.display = 'none';
-    authFormTitle.textContent = 'Create Account 🚀';
-    authFormSubtitle.textContent = 'Register to raise & track campus complaints';
     hideAlert();
-  });
+
+    if (tabName === 'register') {
+      if (tRegister) tRegister.classList.add('active');
+      if (tLogin) tLogin.classList.remove('active');
+      if (fRegister) fRegister.style.display = 'block';
+      if (fLogin) fLogin.style.display = 'none';
+      if (title) title.textContent = 'Create Account 🚀';
+      if (subtitle) subtitle.textContent = 'Register to raise & track campus complaints';
+    } else {
+      if (tLogin) tLogin.classList.add('active');
+      if (tRegister) tRegister.classList.remove('active');
+      if (fLogin) fLogin.style.display = 'block';
+      if (fRegister) fRegister.style.display = 'none';
+      if (title) title.textContent = 'Welcome Back 👋';
+      if (subtitle) subtitle.textContent = 'Sign in to access your complaint dashboard';
+    }
+  };
+
+  if (tabLoginBtn) tabLoginBtn.addEventListener('click', () => switchAuthTab('login'));
+  if (tabRegisterBtn) tabRegisterBtn.addEventListener('click', () => switchAuthTab('register'));
 
   // Handle Login Form Submit
   loginForm.addEventListener('submit', async (e) => {
