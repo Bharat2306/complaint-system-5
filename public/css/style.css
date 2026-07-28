@@ -187,17 +187,22 @@ body {
   color: var(--text-main);
 }
 
-.brand-icon-box {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #4f46e5, #06b6d4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.3rem;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+.brand-logo-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(79, 70, 229, 0.35));
+  transition: transform 0.25s ease;
+}
+
+.brand-logo:hover .brand-logo-img {
+  transform: scale(1.08) rotate(-4deg);
+}
+
+.hero-badge-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
 }
 
 .nav-actions {
