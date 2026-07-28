@@ -149,31 +149,35 @@ document.addEventListener('DOMContentLoaded', () => {
     authAlert.style.display = 'none';
   }
 
-  // ==================== AUTH & SWITCHING ====================
+  // ==================== AUTHENTICATION & TAB SWITCHING ====================
+
+  // Switch to Login Tab
   tabLoginBtn.addEventListener('click', () => {
     tabLoginBtn.classList.add('active');
     tabRegisterBtn.classList.remove('active');
     loginForm.style.display = 'block';
     registerForm.style.display = 'none';
-    authFormTitle.textContent = 'Welcome Back';
-    authFormSubtitle.textContent = 'Please sign in to access your complaint dashboard';
+    authFormTitle.textContent = 'Welcome Back 👋';
+    authFormSubtitle.textContent = 'Sign in to access your complaint dashboard';
     hideAlert();
   });
 
+  // Switch to Register Tab
   tabRegisterBtn.addEventListener('click', () => {
     tabRegisterBtn.classList.add('active');
     tabLoginBtn.classList.remove('active');
     registerForm.style.display = 'block';
     loginForm.style.display = 'none';
-    authFormTitle.textContent = 'Create Account';
+    authFormTitle.textContent = 'Create Account 🚀';
     authFormSubtitle.textContent = 'Register to raise & track campus complaints';
     hideAlert();
   });
 
-  // Login Submit
+  // Handle Login Form Submit
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideAlert();
+
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
 
@@ -184,29 +188,25 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('complaint_user', JSON.stringify(currentUser));
         showDashboard();
       } else {
-        showAlert(res.message || 'Invalid credentials.', 'error');
+        showAlert(res.message || 'Invalid email/ID or password.', 'error');
       }
     } catch (err) {
       showAlert('Error connecting to server.', 'error');
     }
   });
 
-  // Register Submit
+  // Handle Register Form Submit
   registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideAlert();
 
     const selectedRole = regRoleInput ? regRoleInput.value : 'student';
-    const emailOrIdValue = document.getElementById('regEmail').value.trim();
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const department = document.getElementById('regDept') ? document.getElementById('regDept').value.trim() : '';
 
-    const userData = {
-      name: document.getElementById('regName').value.trim(),
-      email: emailOrIdValue,
-      staffId: selectedRole === 'staff' ? emailOrIdValue : '',
-      password: document.getElementById('regPassword').value,
-      role: selectedRole,
-      department: document.getElementById('regDept') ? document.getElementById('regDept').value.trim() : ''
-    };
+    const userData = { name, email, password, role: selectedRole, department };
 
     try {
       const res = await API.register(userData);
@@ -222,21 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
       showAlert('Error connecting to server.', 'error');
     }
   });
-
-  // Quick Demo Buttons (Optional)
-  const demoStudentBtn = document.getElementById('demoStudentBtn');
-  const demoAdminBtn = document.getElementById('demoAdminBtn');
-  const demoStaffBtn = document.getElementById('demoStaffBtn');
-
-  if (demoStudentBtn) demoStudentBtn.addEventListener('click', () => quickLogin('student@campus.edu', 'password123'));
-  if (demoAdminBtn) demoAdminBtn.addEventListener('click', () => quickLogin('admin@campus.edu', 'admin123'));
-  if (demoStaffBtn) demoStaffBtn.addEventListener('click', () => quickLogin('staff@campus.edu', 'staff123'));
-
-  async function quickLogin(email, password) {
-    document.getElementById('loginEmail').value = email;
-    document.getElementById('loginPassword').value = password;
-    loginForm.dispatchEvent(new Event('submit'));
-  }
 
   // Brand Logo Click Handler
   const brandLogo = document.querySelector('.brand-logo');
@@ -259,21 +244,12 @@ document.addEventListener('DOMContentLoaded', () => {
     showAuth();
   });
 
-  const clearAuthInputs = () => {
-    const loginEmail = document.getElementById('loginEmail');
-    const loginPassword = document.getElementById('loginPassword');
-    if (loginEmail) loginEmail.value = '';
-    if (loginPassword) loginPassword.value = '';
-  };
-
   function showAuth() {
     document.documentElement.classList.remove('user-logged-in');
     authView.style.display = 'block';
     dashboardView.style.display = 'none';
     userBadge.style.display = 'none';
     logoutBtn.style.display = 'none';
-    clearAuthInputs();
-    setTimeout(clearAuthInputs, 150);
   }
 
   function showDashboard() {
