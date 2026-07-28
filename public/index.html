@@ -163,6 +163,12 @@
         var data = await res.json();
         if (data && data.success && data.user) {
           userObj = data.user;
+          localStorage.setItem('complaint_user', JSON.stringify(userObj));
+          if (typeof showDashboard === 'function') {
+            showDashboard();
+          } else if (window.showDashboard) {
+            window.showDashboard();
+          }
         }
       } catch(err) {
         console.warn('Login fetch fallback:', err);
@@ -847,7 +853,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js?v=90"></script>
-  <script src="/js/app.js?v=90"></script>
+  <script src="/js/api.js?v=100"></script>
+  <script src="/js/app.js?v=100"></script>
 </body>
 </html>
