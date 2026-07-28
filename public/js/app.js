@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Register Submit (Redirects to Login tab after signup so user logs in explicitly)
+  // Register Submit
   registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideAlert();
@@ -211,13 +211,10 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await API.register(userData);
       if (res.success) {
+        currentUser = res.user;
+        localStorage.setItem('complaint_user', JSON.stringify(currentUser));
+        showDashboard();
         registerForm.reset();
-        tabLoginBtn.click();
-        document.getElementById('loginEmail').value = emailOrIdValue;
-        document.getElementById('loginPassword').value = '';
-        showAlert('Registration successful! Please enter your password to sign in.', 'success');
-        const loginPassInput = document.getElementById('loginPassword');
-        if (loginPassInput) loginPassInput.focus();
       } else {
         showAlert(res.message || 'Registration failed.', 'error');
       }
@@ -239,6 +236,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('loginEmail').value = email;
     document.getElementById('loginPassword').value = password;
     loginForm.dispatchEvent(new Event('submit'));
+  }
+
   // Brand Logo Click Handler
   const brandLogo = document.querySelector('.brand-logo');
   if (brandLogo) {
@@ -265,8 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginPassword = document.getElementById('loginPassword');
     if (loginEmail) loginEmail.value = '';
     if (loginPassword) loginPassword.value = '';
-    if (loginForm) loginForm.reset();
-    if (registerForm) registerForm.reset();
   };
 
   function showAuth() {
@@ -277,7 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtn.style.display = 'none';
     clearAuthInputs();
     setTimeout(clearAuthInputs, 150);
-    setTimeout(clearAuthInputs, 400);
   }
 
   function showDashboard() {
