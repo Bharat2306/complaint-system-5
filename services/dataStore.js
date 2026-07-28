@@ -6,21 +6,30 @@ const bcrypt = require('bcryptjs');
 
 const seedDefaultData = async () => {
   try {
+    const studentPass = await bcrypt.hash('password123', 10);
+    const userPass = await bcrypt.hash('bharat@123', 10);
+    const adminPass = await bcrypt.hash('admin123', 10);
+    const staffPass = await bcrypt.hash('staff123', 10);
+
+    const defaultUsers = [
+      { name: 'Bharat Rajput', email: 'br232006rajput@gmail.com', password: userPass, role: 'student', department: 'Block B-304' },
+      { name: 'Demo Student', email: 'student@campus.edu', password: studentPass, role: 'student', department: 'Block A-101' },
+      { name: 'Campus Admin', email: 'admin@campus.edu', password: adminPass, role: 'admin', department: 'Administration' },
+      { name: 'Tech Staff', email: 'staff@campus.edu', staffId: 'STF-101', password: staffPass, role: 'staff', department: 'Electrical' }
+    ];
+
     if (getMongoStatus()) {
       const count = await MongoUser.countDocuments();
       if (count === 0) {
-        const studentPass = await bcrypt.hash('password123', 10);
-        const userPass = await bcrypt.hash('bharat@123', 10);
-        const adminPass = await bcrypt.hash('admin123', 10);
-        const staffPass = await bcrypt.hash('staff123', 10);
-
-        await MongoUser.create([
-          { name: 'Bharat Rajput', email: 'br232006rajput@gmail.com', password: userPass, role: 'student', department: 'Block B-304' },
-          { name: 'Demo Student', email: 'student@campus.edu', password: studentPass, role: 'student', department: 'Block A-101' },
-          { name: 'Campus Admin', email: 'admin@campus.edu', password: adminPass, role: 'admin', department: 'Administration' },
-          { name: 'Tech Staff', email: 'staff@campus.edu', staffId: 'STF-101', password: staffPass, role: 'staff', department: 'Electrical' }
-        ]);
+        await MongoUser.create(defaultUsers);
         console.log('✅ Default Demo Users Seeded successfully in MongoDB.');
+      }
+    } else {
+      if (memoryUsers.length === 0) {
+        defaultUsers.forEach((u, i) => {
+          memoryUsers.push({ _id: 'usr_' + (i + 1), ...u, createdAt: new Date() });
+        });
+        console.log('✅ Default Demo Users Seeded in Memory Storage.');
       }
     }
   } catch (err) {
