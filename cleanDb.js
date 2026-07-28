@@ -32,56 +32,8 @@ const cleanDatabase = async () => {
       console.log('🧹 Uploads directory cleaned.');
     }
 
-    // Seed default clean demo accounts
-    console.log('🌱 Creating clean default demo accounts (Student, Admin, Staff)...');
-    
-    const defaultUsers = [
-      {
-        name: 'Aarav Sharma (Student)',
-        email: 'student@campus.edu',
-        password: await bcrypt.hash('password123', 10),
-        role: 'student',
-        department: 'Computer Science',
-        roomNo: 'B-304',
-        phone: '+91 9876543210',
-        createdAt: new Date()
-      },
-      {
-        name: 'Dr. Rajesh Verma (Admin)',
-        email: 'admin@campus.edu',
-        password: await bcrypt.hash('admin123', 10),
-        role: 'admin',
-        department: 'Campus Administration',
-        roomNo: 'Admin Block 101',
-        phone: '+91 9876500001',
-        createdAt: new Date()
-      },
-      {
-        name: 'Vikram Singh (Electrical Dept)',
-        email: 'staff@campus.edu',
-        staffId: 'STF-101',
-        password: await bcrypt.hash('staff123', 10),
-        role: 'staff',
-        department: 'Maintenance & Electrical',
-        roomNo: 'Workshop 02',
-        phone: '+91 9876500002',
-        createdAt: new Date()
-      },
-      {
-        name: 'Priya Patel (IT Support Staff)',
-        email: 'itstaff@campus.edu',
-        staffId: 'STF-102',
-        password: await bcrypt.hash('staff123', 10),
-        role: 'staff',
-        department: 'IT & Wi-Fi Support',
-        roomNo: 'Server Room 12',
-        phone: '+91 9876500003',
-        createdAt: new Date()
-      }
-    ];
-
-    await db.collection('users').insertMany(defaultUsers);
-    console.log('✅ Clean setup complete! System is ready with fresh database.');
+    console.log('✅ Clean setup complete! Database is 100% empty and ready for fresh user registration.');
+    process.exit(0);
 
     process.exit(0);
   } catch (error) {

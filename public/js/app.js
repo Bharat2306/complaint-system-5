@@ -266,6 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dashboardView.style.display = 'none';
     userBadge.style.display = 'none';
     logoutBtn.style.display = 'none';
+    if (loginForm) loginForm.reset();
+    if (registerForm) registerForm.reset();
   }
 
   function showDashboard() {

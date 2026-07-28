@@ -5,64 +5,9 @@ const { MongoMessage, memoryMessages } = require('../models/Message');
 const bcrypt = require('bcryptjs');
 
 // Seed default users if empty
+// Seed default users if empty (Disabled for fresh user-driven registration)
 const seedDefaultData = async () => {
-  const defaultUsers = [
-    {
-      name: 'Aarav Sharma (Student)',
-      email: 'student@campus.edu',
-      password: await bcrypt.hash('password123', 10),
-      role: 'student',
-      department: 'Computer Science',
-      roomNo: 'B-304',
-      phone: '+91 9876543210'
-    },
-    {
-      name: 'Dr. Rajesh Verma (Admin)',
-      email: 'admin@campus.edu',
-      password: await bcrypt.hash('admin123', 10),
-      role: 'admin',
-      department: 'Campus Administration',
-      roomNo: 'Admin Block 101',
-      phone: '+91 9876500001'
-    },
-    {
-      name: 'Vikram Singh (Electrical Dept)',
-      email: 'staff@campus.edu',
-      staffId: 'STF-101',
-      password: await bcrypt.hash('staff123', 10),
-      role: 'staff',
-      department: 'Maintenance & Electrical',
-      roomNo: 'Workshop 02',
-      phone: '+91 9876500002'
-    },
-    {
-      name: 'Priya Patel (IT Support Staff)',
-      email: 'itstaff@campus.edu',
-      staffId: 'STF-102',
-      password: await bcrypt.hash('staff123', 10),
-      role: 'staff',
-      department: 'IT & Wi-Fi Support',
-      roomNo: 'Server Room 12',
-      phone: '+91 9876500003'
-    }
-  ];
-
-  if (getMongoStatus()) {
-    try {
-      const count = await MongoUser.countDocuments();
-      if (count === 0) {
-        await MongoUser.insertMany(defaultUsers);
-        console.log('🌱 Seeded default Mongo user records');
-      }
-    } catch (e) {
-      console.log('Error seeding Mongo:', e.message);
-    }
-  } else {
-    if (memoryUsers.length === 0) {
-      defaultUsers.forEach(u => memoryUsers.push({ ...u, _id: Date.now().toString() + Math.random() }));
-      console.log('🌱 Seeded in-memory user records');
-    }
-  }
+  console.log('✨ System initialized with clean database ready for user registration.');
 };
 
 // Data methods
