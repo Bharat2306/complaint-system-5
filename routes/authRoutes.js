@@ -9,7 +9,8 @@ router.post('/register', async (req, res) => {
     const { name, email, staffId, password, role, department, roomNo, phone } = req.body;
 
     const userRole = role && ['student', 'admin', 'staff'].includes(role) ? role : 'student';
-    const identifier = userRole === 'staff' ? (staffId || email) : email;
+    const rawIdentifier = (userRole === 'staff' ? (staffId || email) : email) || '';
+    const identifier = rawIdentifier.trim();
 
     if (!name || !identifier || !password) {
       return res.status(400).json({ success: false, message: 'Please enter all required fields.' });
@@ -20,13 +21,16 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, message: `An account with this ${userRole === 'staff' ? 'Staff ID / Email' : 'Email'} already exists.` });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password.trim(), 10);
 
-    const userEmail = identifier.includes('@') ? identifier.toLowerCase() : `${identifier.toLowerCase()}@staff.campus.edu`;
+    const userEmail = identifier.includes('@') 
+      ? identifier.toLowerCase() 
+      : `${identifier.toLowerCase()}@${userRole === 'staff' ? 'staff.' : ''}campus.edu`;
+
     const finalStaffId = staffId || (userRole === 'staff' ? identifier : '');
 
     const newUser = await createUser({
-      name,
+      name: name.trim(),
       email: userEmail,
       staffId: finalStaffId,
       password: hashedPassword,
@@ -64,17 +68,18 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Please provide email and password.' });
+      return res.status(400).json({ success: false, message: 'Please provide email/ID and password.' });
     }
 
-    const user = await findUserByEmail(email);
+    const inputIdentifier = email.trim();
+    const user = await findUserByEmail(inputIdentifier);
     if (!user) {
       return res.status(400).json({ success: false, message: 'Invalid credentials. User not found.' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password.trim(), user.password);
     if (!isMatch) {
-      return res.status(400).json({ success: false, message: 'Invalid email or password.' });
+      return res.status(400).json({ success: false, message: 'Invalid email/ID or password.' });
     }
 
     const userPayload = {

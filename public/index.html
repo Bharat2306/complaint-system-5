@@ -13,6 +13,21 @@
 
   <!-- Custom CSS -->
   <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Instant Session Guard (Prevents login screen flicker on refresh) -->
+  <script>
+    (function() {
+      try {
+        var userStr = localStorage.getItem('complaint_user');
+        if (userStr && userStr !== 'null') {
+          var user = JSON.parse(userStr);
+          if (user && user.email && user.role) {
+            document.documentElement.classList.add('user-logged-in');
+          }
+        }
+      } catch(e) {}
+    })();
+  </script>
 </head>
 <body>
 
@@ -34,13 +49,25 @@
     </a>
 
     <div class="nav-actions">
-      <!-- Theme Switcher -->
-      <button class="btn-icon" id="themeToggleBtn" title="Toggle Theme">
-        <i class="fa-solid fa-moon"></i>
-      </button>
+      <!-- Notification Bell & Dropdown (hidden pre-login) -->
+      <div class="notif-wrapper" id="notifWrapper" style="display: none; position: relative;">
+        <button class="btn-icon" id="notifBellBtn" title="Notifications">
+          <i class="fa-solid fa-bell"></i>
+          <span class="notif-badge" id="notifBadgeCount" style="display: none;">0</span>
+        </button>
+        <div class="notif-dropdown" id="notifDropdownMenu" style="display: none;">
+          <div class="notif-dropdown-header">
+            <span><i class="fa-solid fa-bell"></i> Notifications</span>
+            <button class="btn-text-sm" id="markAllReadBtn">Mark read</button>
+          </div>
+          <div class="notif-dropdown-body" id="notifList">
+            <div class="notif-empty">No new notifications</div>
+          </div>
+        </div>
+      </div>
 
       <!-- User Profile Badge (hidden pre-login) -->
-      <div class="user-badge" id="userBadge" style="display: none;">
+      <div class="user-badge" id="userBadge" style="display: none; cursor: pointer;" title="Click to view/edit Student Profile">
         <div class="avatar" id="userAvatar">A</div>
         <div>
           <div style="font-size: 0.85rem; font-weight: 700;" id="userName">Student</div>
@@ -320,11 +347,12 @@
           <select class="form-select" id="categoryFilter" style="width: auto;">
             <option value="ALL">All Categories</option>
             <option value="Hostel">Hostel</option>
-            <option value="Academic">Academic</option>
-            <option value="Wi-Fi & IT">Wi-Fi & IT</option>
-            <option value="Maintenance">Maintenance</option>
-            <option value="Canteen">Canteen</option>
-            <option value="Security">Security</option>
+            <option value="Electrical">Electrical</option>
+            <option value="Mess">Mess</option>
+            <option value="Internet">Internet</option>
+            <option value="Classroom">Classroom</option>
+            <option value="Cleanliness">Cleanliness</option>
+            <option value="Water Problem">Water Problem</option>
             <option value="Other">Other</option>
           </select>
 
@@ -368,11 +396,12 @@
               <label class="form-label">Category *</label>
               <select class="form-select" id="cCategory" required>
                 <option value="Hostel">Hostel</option>
-                <option value="Wi-Fi & IT">Wi-Fi & IT</option>
-                <option value="Maintenance">Maintenance (Plumbing/Electrical)</option>
-                <option value="Academic">Academic / Classroom</option>
-                <option value="Canteen">Canteen & Mess</option>
-                <option value="Security">Security</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Mess">Mess</option>
+                <option value="Internet">Internet</option>
+                <option value="Classroom">Classroom</option>
+                <option value="Cleanliness">Cleanliness</option>
+                <option value="Water Problem">Water Problem</option>
                 <option value="Other">Other</option>
               </select>
             </div>
@@ -584,6 +613,67 @@
           <button type="button" class="btn btn-secondary" id="cancelFeedbackBtn">Cancel</button>
           <button type="submit" class="btn btn-success">
             <i class="fa-solid fa-check-double"></i> Submit & Close Complaint
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== STUDENT PROFILE MODAL ==================== -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-user-gear"></i> Student Profile</h3>
+        <button class="btn-icon" id="closeProfileModalBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="profileForm">
+        <div class="modal-body">
+          <div class="profile-header-card" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--primary-light); border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+            <div class="avatar" id="profModalAvatar" style="width: 54px; height: 54px; font-size: 1.5rem; background: var(--primary); color: white;">S</div>
+            <div>
+              <h4 id="profModalName" style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.2rem;">Student Name</h4>
+              <span class="role-tag student" id="profModalRole">STUDENT</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-input" id="profNameInput" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Campus Email</label>
+              <input type="email" class="form-input" id="profEmailInput" readonly style="opacity: 0.7; background: rgba(0,0,0,0.03);">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Roll Number / Student ID</label>
+              <input type="text" class="form-input" id="profRollInput" placeholder="e.g. 2024-CS-108">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Hostel Block</label>
+              <input type="text" class="form-input" id="profHostelInput" placeholder="e.g. Hostel Block B">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Room Number</label>
+              <input type="text" class="form-input" id="profRoomInput" placeholder="e.g. Room 304">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="text" class="form-input" id="profPhoneInput" placeholder="e.g. +91 9876543210">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelProfileBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-floppy-disk"></i> Save Profile Changes
           </button>
         </div>
       </form>

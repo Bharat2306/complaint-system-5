@@ -47,108 +47,12 @@ const seedDefaultData = async () => {
     }
   ];
 
-  const defaultComplaints = [
-    {
-      ticketId: 'CMP-1001',
-      studentId: 'student@campus.edu',
-      studentName: 'Aarav Sharma',
-      studentEmail: 'student@campus.edu',
-      title: 'Wi-Fi disconnects frequently in Hostel Block B 3rd Floor',
-      category: 'Wi-Fi & IT',
-      priority: 'High',
-      location: 'Hostel Block B, Room 304',
-      description: 'The Wi-Fi router on 3rd floor loses internet signal every 20 minutes. Unable to attend online lectures.',
-      media: [
-        { url: '/assets/sample_wifi.png', type: 'image', originalName: 'wifi_speedtest.png' }
-      ],
-      status: 'In Progress',
-      assignedTo: 'Priya Patel (IT Support Staff)',
-      assignedStaffId: 'itstaff@campus.edu',
-      timeline: [
-        { status: 'Pending', updatedBy: 'Aarav Sharma', note: 'Complaint submitted by student', timestamp: new Date(Date.now() - 86400000 * 2) },
-        { status: 'Assigned', updatedBy: 'Admin', note: 'Assigned to IT Support Department', timestamp: new Date(Date.now() - 86400000 * 1.5) },
-        { status: 'In Progress', updatedBy: 'Priya Patel', note: 'Technician investigating router configuration on 3rd floor', timestamp: new Date(Date.now() - 86400000 * 0.5) }
-      ],
-      rating: 0,
-      feedback: '',
-      createdAt: new Date(Date.now() - 86400000 * 2),
-      updatedAt: new Date(Date.now() - 86400000 * 0.5)
-    },
-    {
-      ticketId: 'CMP-1002',
-      studentId: 'student@campus.edu',
-      studentName: 'Aarav Sharma',
-      studentEmail: 'student@campus.edu',
-      title: 'Water Leakage in Main Bathrooms',
-      category: 'Maintenance',
-      priority: 'Medium',
-      location: 'Hostel Block B, 2nd Floor Washroom',
-      description: 'Tap pipe is leaking continuously causing water logging in washroom area.',
-      media: [],
-      status: 'Pending',
-      assignedTo: 'Unassigned',
-      assignedStaffId: '',
-      timeline: [
-        { status: 'Pending', updatedBy: 'Aarav Sharma', note: 'Complaint submitted', timestamp: new Date(Date.now() - 3600000 * 4) }
-      ],
-      rating: 0,
-      feedback: '',
-      createdAt: new Date(Date.now() - 3600000 * 4),
-      updatedAt: new Date(Date.now() - 3600000 * 4)
-    },
-    {
-      ticketId: 'CMP-1003',
-      studentId: 'student@campus.edu',
-      studentName: 'Aarav Sharma',
-      studentEmail: 'student@campus.edu',
-      title: 'AC Noise in Library Quiet Zone',
-      category: 'Academic',
-      priority: 'Low',
-      location: 'Central Library, 1st Floor',
-      description: 'The split AC unit makes loud buzzing sounds interfering with self-study.',
-      media: [],
-      status: 'Resolved',
-      assignedTo: 'Vikram Singh (Electrical Dept)',
-      assignedStaffId: 'staff@campus.edu',
-      timeline: [
-        { status: 'Pending', updatedBy: 'Aarav Sharma', note: 'Complaint registered', timestamp: new Date(Date.now() - 86400000 * 5) },
-        { status: 'In Progress', updatedBy: 'Vikram Singh', note: 'Filter cleaned and motor lubricated', timestamp: new Date(Date.now() - 86400000 * 3) },
-        { status: 'Resolved', updatedBy: 'Vikram Singh', note: 'AC motor serviced and functioning quietly', timestamp: new Date(Date.now() - 86400000 * 1) }
-      ],
-      rating: 5,
-      feedback: 'Very quick resolution! Thanks to the maintenance team.',
-      createdAt: new Date(Date.now() - 86400000 * 5),
-      updatedAt: new Date(Date.now() - 86400000 * 1)
-    }
-  ];
-
-  const defaultMessages = [
-    {
-      complaintId: 'CMP-1001',
-      senderId: 'student@campus.edu',
-      senderName: 'Aarav Sharma',
-      senderRole: 'student',
-      text: 'Hello team, is someone checking the 3rd floor router today?',
-      createdAt: new Date(Date.now() - 3600000 * 3)
-    },
-    {
-      complaintId: 'CMP-1001',
-      senderId: 'itstaff@campus.edu',
-      senderName: 'Priya Patel (IT)',
-      senderRole: 'staff',
-      text: 'Hi Aarav, yes! I am currently replacing the network switch module. Will take 30 mins.',
-      createdAt: new Date(Date.now() - 3600000 * 2)
-    }
-  ];
-
   if (getMongoStatus()) {
     try {
       const count = await MongoUser.countDocuments();
       if (count === 0) {
         await MongoUser.insertMany(defaultUsers);
-        await MongoComplaint.insertMany(defaultComplaints);
-        await MongoMessage.insertMany(defaultMessages);
-        console.log('🌱 Seeded default Mongo database records');
+        console.log('🌱 Seeded default Mongo user records');
       }
     } catch (e) {
       console.log('Error seeding Mongo:', e.message);
@@ -156,9 +60,7 @@ const seedDefaultData = async () => {
   } else {
     if (memoryUsers.length === 0) {
       defaultUsers.forEach(u => memoryUsers.push({ ...u, _id: Date.now().toString() + Math.random() }));
-      defaultComplaints.forEach(c => memoryComplaints.push({ ...c, _id: Date.now().toString() + Math.random() }));
-      defaultMessages.forEach(m => memoryMessages.push({ ...m, _id: Date.now().toString() + Math.random() }));
-      console.log('🌱 Seeded in-memory store records');
+      console.log('🌱 Seeded in-memory user records');
     }
   }
 };
@@ -167,20 +69,31 @@ const seedDefaultData = async () => {
 const findUserByEmail = async (identifier) => {
   if (!identifier) return null;
   const searchKey = identifier.trim().toLowerCase();
+  const escapedKey = searchKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
   if (getMongoStatus()) {
     return await MongoUser.findOne({
       $or: [
         { email: searchKey },
+        { email: new RegExp('^' + escapedKey + '(@.*)?$', 'i') },
         { staffId: searchKey },
-        { staffId: identifier.trim().toUpperCase() }
+        { staffId: identifier.trim().toUpperCase() },
+        { staffId: new RegExp('^' + escapedKey + '$', 'i') }
       ]
     });
   } else {
-    return memoryUsers.find(u => 
-      (u.email && u.email.toLowerCase() === searchKey) || 
-      (u.staffId && u.staffId.toLowerCase() === searchKey) ||
-      (u.staffId && u.staffId.toUpperCase() === identifier.trim().toUpperCase())
-    );
+    return memoryUsers.find(u => {
+      if (!u) return false;
+      const uEmail = (u.email || '').toLowerCase();
+      const uStaffId = (u.staffId || '').toLowerCase();
+      const emailPrefix = uEmail.split('@')[0];
+      return (
+        uEmail === searchKey ||
+        emailPrefix === searchKey ||
+        uStaffId === searchKey ||
+        uStaffId === identifier.trim().toLowerCase()
+      );
+    });
   }
 };
 

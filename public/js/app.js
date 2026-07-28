@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Register Submit (Auto Logins User directly upon Sign Up)
+  // Register Submit (Redirects to Login tab after signup so user logs in explicitly)
   registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideAlert();
@@ -211,10 +211,13 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await API.register(userData);
       if (res.success) {
-        currentUser = res.user;
-        localStorage.setItem('complaint_user', JSON.stringify(currentUser));
-        showDashboard();
         registerForm.reset();
+        tabLoginBtn.click();
+        document.getElementById('loginEmail').value = emailOrIdValue;
+        document.getElementById('loginPassword').value = '';
+        showAlert('Registration successful! Please enter your password to sign in.', 'success');
+        const loginPassInput = document.getElementById('loginPassword');
+        if (loginPassInput) loginPassInput.focus();
       } else {
         showAlert(res.message || 'Registration failed.', 'error');
       }
@@ -232,16 +235,29 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('loginEmail').value = email;
     document.getElementById('loginPassword').value = password;
     loginForm.dispatchEvent(new Event('submit'));
+  // Brand Logo Click Handler
+  const brandLogo = document.querySelector('.brand-logo');
+  if (brandLogo) {
+    brandLogo.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (currentUser) {
+        showDashboard();
+      } else {
+        showAuth();
+      }
+    });
   }
 
   logoutBtn.addEventListener('click', () => {
     currentUser = null;
     localStorage.removeItem('complaint_user');
+    document.documentElement.classList.remove('user-logged-in');
     if (chatPollInterval) clearInterval(chatPollInterval);
     showAuth();
   });
 
   function showAuth() {
+    document.documentElement.classList.remove('user-logged-in');
     authView.style.display = 'block';
     dashboardView.style.display = 'none';
     userBadge.style.display = 'none';
@@ -249,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showDashboard() {
+    document.documentElement.classList.add('user-logged-in');
     authView.style.display = 'none';
     dashboardView.style.display = 'block';
     userBadge.style.display = 'flex';
@@ -293,6 +310,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function getExpectedCompletionDate(createdAt, priority) {
+    const dt = new Date(createdAt);
+    let hoursToAdd = 48;
+    if (priority === 'High' || priority === 'Emergency') hoursToAdd = 24;
+    else if (priority === 'Low') hoursToAdd = 72;
+    dt.setHours(dt.getHours() + hoursToAdd);
+    return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
   // ==================== LOAD & RENDER COMPLAINTS ====================
   async function loadComplaints() {
     try {
@@ -301,6 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
         complaintsList = res.complaints;
         updateStats();
         renderComplaintsGrid();
+        updateNotifications();
       }
     } catch (err) {
       console.error('Failed to load complaints:', err);
@@ -361,6 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     complaintsContainer.innerHTML = filtered.map(c => {
       const statusClass = `status-${c.status.toLowerCase().replace(/\s+/g, '')}`;
       const priorityClass = `priority-${c.priority.toLowerCase()}`;
+      const expectedDate = getExpectedCompletionDate(c.createdAt, c.priority);
       
       let mediaStrip = '';
       if (c.media && c.media.length > 0) {
@@ -389,6 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="complaint-meta">
               <div class="meta-item"><i class="fa-solid fa-tag"></i> ${c.category}</div>
               <div class="meta-item"><span class="priority-pill ${priorityClass}">${c.priority} Priority</span></div>
+              <div class="meta-item"><span class="expected-date-pill"><i class="fa-regular fa-calendar-check"></i> Expected: ${expectedDate}</span></div>
               <div class="meta-item"><i class="fa-solid fa-location-dot"></i> <strong>${escapeHTML(c.location || 'Campus')}</strong></div>
               <div class="meta-item"><i class="fa-solid fa-user-graduate"></i> Raised By: <strong>${escapeHTML(c.studentName || 'Student')}</strong></div>
               ${c.assignedTo ? `<div class="meta-item" style="color: var(--primary);"><i class="fa-solid fa-user-gear"></i> Staff: <strong>${escapeHTML(c.assignedTo)}</strong></div>` : ''}
@@ -579,7 +608,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Timeline Rendering
     const timelineContainer = document.getElementById('detailTimeline');
-    timelineContainer.innerHTML = c.timeline.map(t => `
+    const statusOrder = ['Pending', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
+    const currentIdx = statusOrder.indexOf(c.status);
+
+    const visualTimelineHTML = `
+      <div class="visual-step-timeline">
+        <div class="step-node ${currentIdx >= 0 ? (currentIdx === 0 ? 'active' : 'completed') : ''}">
+          <div class="step-circle"><i class="fa-solid fa-paper-plane"></i></div>
+          <div class="step-label">Submitted</div>
+        </div>
+        <div class="step-line-connector ${currentIdx >= 1 ? 'active' : ''}"></div>
+        <div class="step-node ${currentIdx >= 1 ? (currentIdx === 1 ? 'active' : 'completed') : ''}">
+          <div class="step-circle"><i class="fa-solid fa-user-gear"></i></div>
+          <div class="step-label">Assigned</div>
+        </div>
+        <div class="step-line-connector ${currentIdx >= 2 ? 'active' : ''}"></div>
+        <div class="step-node ${currentIdx >= 2 ? (currentIdx === 2 ? 'active' : 'completed') : ''}">
+          <div class="step-circle"><i class="fa-solid fa-wrench"></i></div>
+          <div class="step-label">In Progress</div>
+        </div>
+        <div class="step-line-connector ${currentIdx >= 3 ? 'active' : ''}"></div>
+        <div class="step-node ${currentIdx >= 3 ? 'completed' : ''}">
+          <div class="step-circle"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="step-label">Resolved</div>
+        </div>
+      </div>
+    `;
+
+    timelineContainer.innerHTML = visualTimelineHTML + c.timeline.map(t => `
       <div class="timeline-item">
         <div class="timeline-dot"></div>
         <div class="timeline-content">
@@ -826,6 +882,116 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Failed to submit feedback.');
     }
   });
+
+  // ==================== NOTIFICATIONS MODULE ====================
+  const notifBellBtn = document.getElementById('notifBellBtn');
+  const notifDropdownMenu = document.getElementById('notifDropdownMenu');
+  const notifBadgeCount = document.getElementById('notifBadgeCount');
+  const notifList = document.getElementById('notifList');
+  const markAllReadBtn = document.getElementById('markAllReadBtn');
+  let notificationsList = [];
+
+  function updateNotifications() {
+    notificationsList = [];
+    complaintsList.forEach(c => {
+      if (c.timeline && c.timeline.length > 0) {
+        c.timeline.slice(-2).forEach(t => {
+          notificationsList.push({
+            id: c.ticketId,
+            title: `[${c.ticketId}] Status: ${t.status}`,
+            note: t.note || `Complaint updated to ${t.status}`,
+            time: new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            unread: true
+          });
+        });
+      }
+    });
+
+    const unreadCount = notificationsList.filter(n => n.unread).length;
+    if (unreadCount > 0 && notifBadgeCount) {
+      notifBadgeCount.textContent = unreadCount;
+      notifBadgeCount.style.display = 'flex';
+    } else if (notifBadgeCount) {
+      notifBadgeCount.style.display = 'none';
+    }
+
+    if (!notifList) return;
+    if (notificationsList.length === 0) {
+      notifList.innerHTML = `<div class="notif-empty">No notifications yet</div>`;
+    } else {
+      notifList.innerHTML = notificationsList.map(n => `
+        <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="openDetailModal('${n.id}')">
+          <div class="notif-item-title">${escapeHTML(n.title)}</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">${escapeHTML(n.note)}</div>
+          <div class="notif-item-time"><i class="fa-regular fa-clock"></i> ${n.time}</div>
+        </div>
+      `).join('');
+    }
+  }
+
+  if (notifBellBtn) {
+    notifBellBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!notifDropdownMenu) return;
+      const isVisible = notifDropdownMenu.style.display === 'block';
+      notifDropdownMenu.style.display = isVisible ? 'none' : 'block';
+    });
+  }
+
+  document.addEventListener('click', () => {
+    if (notifDropdownMenu) notifDropdownMenu.style.display = 'none';
+  });
+
+  if (markAllReadBtn) {
+    markAllReadBtn.addEventListener('click', () => {
+      notificationsList.forEach(n => n.unread = false);
+      if (notifBadgeCount) notifBadgeCount.style.display = 'none';
+      updateNotifications();
+    });
+  }
+
+  // ==================== STUDENT PROFILE MODAL ====================
+  const profileModal = document.getElementById('profileModal');
+  const closeProfileModalBtn = document.getElementById('closeProfileModalBtn');
+  const cancelProfileBtn = document.getElementById('cancelProfileBtn');
+  const profileForm = document.getElementById('profileForm');
+
+  if (userBadge) {
+    userBadge.addEventListener('click', () => {
+      if (!currentUser) return;
+      document.getElementById('profModalAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+      document.getElementById('profModalName').textContent = currentUser.name;
+      document.getElementById('profModalRole').textContent = currentUser.role.toUpperCase();
+      document.getElementById('profNameInput').value = currentUser.name || '';
+      document.getElementById('profEmailInput').value = currentUser.email || '';
+      document.getElementById('profRollInput').value = currentUser.rollNumber || currentUser.staffId || '';
+      document.getElementById('profHostelInput').value = currentUser.hostel || currentUser.department || '';
+      document.getElementById('profRoomInput').value = currentUser.roomNo || '';
+      document.getElementById('profPhoneInput').value = currentUser.phone || '';
+      if (profileModal) profileModal.classList.add('active');
+    });
+  }
+
+  if (closeProfileModalBtn) closeProfileModalBtn.addEventListener('click', () => profileModal.classList.remove('active'));
+  if (cancelProfileBtn) cancelProfileBtn.addEventListener('click', () => profileModal.classList.remove('active'));
+
+  if (profileForm) {
+    profileForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      currentUser.name = document.getElementById('profNameInput').value.trim();
+      currentUser.rollNumber = document.getElementById('profRollInput').value.trim();
+      currentUser.hostel = document.getElementById('profHostelInput').value.trim();
+      currentUser.roomNo = document.getElementById('profRoomInput').value.trim();
+      currentUser.phone = document.getElementById('profPhoneInput').value.trim();
+
+      localStorage.setItem('complaint_user', JSON.stringify(currentUser));
+      userName.textContent = currentUser.name;
+      userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
+      if (dashGreeting) dashGreeting.textContent = `Welcome, ${currentUser.name.split(' ')[0]}! 👋`;
+      profileModal.classList.remove('active');
+      alert('✅ Student Profile updated successfully!');
+    });
+  }
 
   // Utility Helper
   function escapeHTML(str) {
