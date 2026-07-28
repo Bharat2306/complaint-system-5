@@ -226,10 +226,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Quick Demo Buttons
-  document.getElementById('demoStudentBtn').addEventListener('click', () => quickLogin('student@campus.edu', 'password123'));
-  document.getElementById('demoAdminBtn').addEventListener('click', () => quickLogin('admin@campus.edu', 'admin123'));
-  document.getElementById('demoStaffBtn').addEventListener('click', () => quickLogin('staff@campus.edu', 'staff123'));
+  // Quick Demo Buttons (Optional)
+  const demoStudentBtn = document.getElementById('demoStudentBtn');
+  const demoAdminBtn = document.getElementById('demoAdminBtn');
+  const demoStaffBtn = document.getElementById('demoStaffBtn');
+
+  if (demoStudentBtn) demoStudentBtn.addEventListener('click', () => quickLogin('student@campus.edu', 'password123'));
+  if (demoAdminBtn) demoAdminBtn.addEventListener('click', () => quickLogin('admin@campus.edu', 'admin123'));
+  if (demoStaffBtn) demoStaffBtn.addEventListener('click', () => quickLogin('staff@campus.edu', 'staff123'));
 
   async function quickLogin(email, password) {
     document.getElementById('loginEmail').value = email;
