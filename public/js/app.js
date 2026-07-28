@@ -182,13 +182,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (tabLoginBtn) tabLoginBtn.addEventListener('click', () => switchAuthTab('login'));
   if (tabRegisterBtn) tabRegisterBtn.addEventListener('click', () => switchAuthTab('register'));
 
-  // Handle Login Form Submit
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  // Handle Login Form Submit (Global Window Handler)
+  window.handleLoginSubmit = async function(e) {
+    if (e) e.preventDefault();
     hideAlert();
 
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
+    const emailInput = document.getElementById('loginEmail');
+    const passInput = document.getElementById('loginPassword');
+    const email = emailInput ? emailInput.value.trim() : '';
+    const password = passInput ? passInput.value : '';
+
+    if (!email || !password) {
+      showAlert('Please enter Email/ID and Password.', 'error');
+      return;
+    }
 
     try {
       const res = await API.login(email, password);
@@ -200,22 +207,34 @@ document.addEventListener('DOMContentLoaded', () => {
         showAlert(res.message || 'Invalid email/ID or password.', 'error');
       }
     } catch (err) {
+      console.error(err);
       showAlert('Error connecting to server.', 'error');
     }
-  });
+  };
 
-  // Handle Register Form Submit
-  registerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  // Handle Register Form Submit (Global Window Handler)
+  window.handleRegisterSubmit = async function(e) {
+    if (e) e.preventDefault();
     hideAlert();
 
-    const selectedRole = regRoleInput ? regRoleInput.value : 'student';
-    const name = document.getElementById('regName').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const password = document.getElementById('regPassword').value;
-    const department = document.getElementById('regDept') ? document.getElementById('regDept').value.trim() : '';
+    const regNameInput = document.getElementById('regName');
+    const regEmailInput = document.getElementById('regEmail');
+    const regPasswordInput = document.getElementById('regPassword');
+    const regRoleInput = document.getElementById('regRole');
+    const regDeptInput = document.getElementById('regDept');
 
-    const userData = { name, email, password, role: selectedRole, department };
+    const name = regNameInput ? regNameInput.value.trim() : '';
+    const email = regEmailInput ? regEmailInput.value.trim() : '';
+    const password = regPasswordInput ? regPasswordInput.value : '';
+    const role = regRoleInput ? regRoleInput.value : 'student';
+    const department = regDeptInput ? regDeptInput.value.trim() : '';
+
+    if (!name || !email || !password) {
+      showAlert('Please enter Full Name, Email/ID, and Password.', 'error');
+      return;
+    }
+
+    const userData = { name, email, password, role, department };
 
     try {
       const res = await API.register(userData);
@@ -223,14 +242,16 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUser = res.user;
         localStorage.setItem('complaint_user', JSON.stringify(currentUser));
         showDashboard();
-        registerForm.reset();
+        const rForm = document.getElementById('registerForm');
+        if (rForm) rForm.reset();
       } else {
         showAlert(res.message || 'Registration failed.', 'error');
       }
     } catch (err) {
+      console.error(err);
       showAlert('Error connecting to server.', 'error');
     }
-  });
+  };
 
   // Brand Logo Click Handler
   const brandLogo = document.querySelector('.brand-logo');

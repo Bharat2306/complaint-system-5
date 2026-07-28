@@ -117,7 +117,7 @@
         </div>
 
         <!-- Login Form -->
-        <form id="loginForm" autocomplete="off">
+        <form id="loginForm" autocomplete="off" onsubmit="handleLoginSubmit(event)">
           <div class="form-group">
             <label class="form-label">Campus Email / Staff ID</label>
             <div class="input-with-icon">
@@ -140,7 +140,7 @@
         </form>
 
         <!-- Sign Up Form (hidden by default) -->
-        <form id="registerForm" style="display: none;">
+        <form id="registerForm" style="display: none;" onsubmit="handleRegisterSubmit(event)">
           <div class="form-group">
             <label class="form-label">Full Name</label>
             <div class="input-with-icon">
