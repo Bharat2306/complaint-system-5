@@ -276,11 +276,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (res.success) {
         currentUser = res.user;
         localStorage.setItem('complaint_user', JSON.stringify(currentUser));
-        if (typeof showDashboard === 'function') {
-          showDashboard();
-        } else if (window.showDashboard) {
-          window.showDashboard();
-        }
+        document.documentElement.classList.add('user-logged-in');
+        const authViewEl = document.getElementById('authView');
+        const dashboardViewEl = document.getElementById('dashboardView');
+        if (authViewEl) authViewEl.style.display = 'none';
+        if (dashboardViewEl) dashboardViewEl.style.display = 'block';
+        showDashboard();
       } else {
         showAlert(res.message || 'Invalid email/ID or password.', 'error');
       }
@@ -363,12 +364,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showDashboard() {
+    currentUser = JSON.parse(localStorage.getItem('complaint_user') || 'null');
     if (!currentUser) return;
+
     document.documentElement.classList.add('user-logged-in');
-    if (authView) authView.style.display = 'none';
-    if (dashboardView) dashboardView.style.display = 'block';
-    if (userBadge) userBadge.style.display = 'flex';
-    if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+    const authViewEl = document.getElementById('authView');
+    const dashboardViewEl = document.getElementById('dashboardView');
+    const userBadgeEl = document.getElementById('userBadge');
+    const logoutBtnEl = document.getElementById('logoutBtn');
+
+    if (authViewEl) authViewEl.style.display = 'none';
+    if (dashboardViewEl) dashboardViewEl.style.display = 'block';
+    if (userBadgeEl) userBadgeEl.style.display = 'flex';
+    if (logoutBtnEl) logoutBtnEl.style.display = 'inline-flex';
 
     // Populate navbar user info
     const userNameStr = currentUser.name || 'User';
