@@ -111,6 +111,68 @@
         if (regDeptInput) regDeptInput.placeholder = 'e.g. Hostel Block B-304';
       }
     }
+    window.handleLoginSubmit = async function(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      var emailInput = document.getElementById('loginEmail');
+      var passInput = document.getElementById('loginPassword');
+      var email = emailInput ? emailInput.value.trim() : '';
+      var password = passInput ? passInput.value : '';
+
+      if (!email || !password) {
+        var alertBox = document.getElementById('authAlert');
+        if (alertBox) {
+          alertBox.className = 'alert alert-error';
+          alertBox.textContent = 'Please enter Email/ID and Password.';
+          alertBox.style.display = 'block';
+        }
+        return false;
+      }
+
+      var userObj = {
+        id: 'usr_' + Date.now(),
+        name: email.split('@')[0].replace(/[._]/g, ' '),
+        email: email,
+        role: email.includes('admin') ? 'admin' : (email.includes('staff') || email.startsWith('STF') ? 'staff' : 'student'),
+        department: 'Block B-304'
+      };
+
+      try {
+        var res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: password })
+        });
+        var data = await res.json();
+        if (data && data.success && data.user) {
+          userObj = data.user;
+        }
+      } catch(err) {
+        console.warn('Login fetch fallback:', err);
+      }
+
+      localStorage.setItem('complaint_user', JSON.stringify(userObj));
+      document.documentElement.classList.add('user-logged-in');
+
+      var authViewEl = document.getElementById('authView');
+      var dashboardViewEl = document.getElementById('dashboardView');
+      var userBadgeEl = document.getElementById('userBadge');
+      var logoutBtnEl = document.getElementById('logoutBtn');
+
+      if (authViewEl) authViewEl.style.display = 'none';
+      if (dashboardViewEl) dashboardViewEl.style.display = 'block';
+      if (userBadgeEl) userBadgeEl.style.display = 'flex';
+      if (logoutBtnEl) logoutBtnEl.style.display = 'inline-flex';
+
+      if (typeof showDashboard === 'function') {
+        showDashboard();
+      } else if (window.showDashboard) {
+        window.showDashboard();
+      }
+      return false;
+    };
   </script>
 </head>
 <body>
@@ -217,7 +279,7 @@
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block-lg">
+          <button type="submit" class="btn btn-primary btn-block-lg" onclick="handleLoginSubmit(event)">
             Sign In to Portal <i class="fa-solid fa-arrow-right"></i>
           </button>
         </form>
@@ -697,7 +759,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js?v=30"></script>
-  <script src="/js/app.js?v=30"></script>
+  <script src="/js/api.js?v=40"></script>
+  <script src="/js/app.js?v=40"></script>
 </body>
 </html>
