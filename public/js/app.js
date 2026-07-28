@@ -276,7 +276,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (res.success) {
         currentUser = res.user;
         localStorage.setItem('complaint_user', JSON.stringify(currentUser));
-        showDashboard();
+        if (typeof showDashboard === 'function') {
+          showDashboard();
+        } else if (window.showDashboard) {
+          window.showDashboard();
+        }
       } else {
         showAlert(res.message || 'Invalid email/ID or password.', 'error');
       }
@@ -358,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtn.style.display = 'none';
   }
 
-  window.showDashboard = function() {
+  function showDashboard() {
     if (!currentUser) return;
     document.documentElement.classList.add('user-logged-in');
     if (authView) authView.style.display = 'none';
@@ -409,7 +413,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (userRoleStr !== 'student') {
       loadStaffDropdown();
     }
-  };
+  }
+
+  window.showDashboard = showDashboard;
 
   function getExpectedCompletionDate(createdAt, priority) {
     const dt = new Date(createdAt);
