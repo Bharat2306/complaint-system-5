@@ -4,10 +4,28 @@ const { MongoComplaint, memoryComplaints } = require('../models/Complaint');
 const { MongoMessage, memoryMessages } = require('../models/Message');
 const bcrypt = require('bcryptjs');
 
-// Seed default users if empty
-// Seed default users if empty (Disabled for fresh user-driven registration)
 const seedDefaultData = async () => {
-  console.log('✨ System initialized with clean database ready for user registration.');
+  try {
+    if (getMongoStatus()) {
+      const count = await MongoUser.countDocuments();
+      if (count === 0) {
+        const studentPass = await bcrypt.hash('password123', 10);
+        const userPass = await bcrypt.hash('bharat@123', 10);
+        const adminPass = await bcrypt.hash('admin123', 10);
+        const staffPass = await bcrypt.hash('staff123', 10);
+
+        await MongoUser.create([
+          { name: 'Bharat Rajput', email: 'br232006rajput@gmail.com', password: userPass, role: 'student', department: 'Block B-304' },
+          { name: 'Demo Student', email: 'student@campus.edu', password: studentPass, role: 'student', department: 'Block A-101' },
+          { name: 'Campus Admin', email: 'admin@campus.edu', password: adminPass, role: 'admin', department: 'Administration' },
+          { name: 'Tech Staff', email: 'staff@campus.edu', staffId: 'STF-101', password: staffPass, role: 'staff', department: 'Electrical' }
+        ]);
+        console.log('✅ Default Demo Users Seeded successfully in MongoDB.');
+      }
+    }
+  } catch (err) {
+    console.error('Seed Error:', err);
+  }
 };
 
 // Data methods
