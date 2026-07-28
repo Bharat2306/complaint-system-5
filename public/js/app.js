@@ -1,5 +1,34 @@
 // Main Application Logic for Smart Complaint System
 
+// Global Tab Switcher Function (Top-Level Scope)
+window.switchAuthTab = function(tabName) {
+  const tLogin = document.getElementById('tabLoginBtn');
+  const tRegister = document.getElementById('tabRegisterBtn');
+  const fLogin = document.getElementById('loginForm');
+  const fRegister = document.getElementById('registerForm');
+  const title = document.getElementById('authFormTitle');
+  const subtitle = document.getElementById('authFormSubtitle');
+  const alertBox = document.getElementById('authAlert');
+
+  if (alertBox) alertBox.style.display = 'none';
+
+  if (tabName === 'register') {
+    if (tRegister) tRegister.classList.add('active');
+    if (tLogin) tLogin.classList.remove('active');
+    if (fRegister) fRegister.style.display = 'block';
+    if (fLogin) fLogin.style.display = 'none';
+    if (title) title.textContent = 'Create Account 🚀';
+    if (subtitle) subtitle.textContent = 'Register to raise & track campus complaints';
+  } else {
+    if (tLogin) tLogin.classList.add('active');
+    if (tRegister) tRegister.classList.remove('active');
+    if (fLogin) fLogin.style.display = 'block';
+    if (fRegister) fRegister.style.display = 'none';
+    if (title) title.textContent = 'Welcome Back 👋';
+    if (subtitle) subtitle.textContent = 'Sign in to access your complaint dashboard';
+  }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   // App State
   let currentUser = JSON.parse(localStorage.getItem('complaint_user') || 'null');
