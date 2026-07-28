@@ -314,26 +314,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await API.register(userData);
       if (res.success) {
-        // Reset signup form
+        // Direct login into Dashboard!
+        currentUser = res.user;
+        localStorage.setItem('complaint_user', JSON.stringify(currentUser));
+        if (window.showDashboard) window.showDashboard();
         const rForm = document.getElementById('registerForm');
         if (rForm) rForm.reset();
-
-        // Switch UI to Login Tab
-        if (window.switchAuthTab) window.switchAuthTab('login');
-
-        // Pre-fill login input with registered Email or Staff ID
-        const loginEmailInput = document.getElementById('loginEmail');
-        if (loginEmailInput) {
-          loginEmailInput.value = email;
-        }
-
-        const loginPasswordInput = document.getElementById('loginPassword');
-        if (loginPasswordInput) {
-          loginPasswordInput.value = '';
-          loginPasswordInput.focus();
-        }
-
-        showAlert('Account created successfully! Please enter your password to sign in.', 'success');
       } else {
         showAlert(res.message || 'Registration failed.', 'error');
       }
