@@ -131,12 +131,21 @@
         return false;
       }
 
+      var lowerEmail = email.toLowerCase();
+      var detectedRole = 'student';
+      if (lowerEmail.includes('admin') || lowerEmail.includes('adm')) {
+        detectedRole = 'admin';
+      } else if (lowerEmail.includes('staff') || lowerEmail.startsWith('stf') || lowerEmail.startsWith('emp') || lowerEmail.includes('tech')) {
+        detectedRole = 'staff';
+      }
+
       var userObj = {
         id: 'usr_' + Date.now(),
         name: email.split('@')[0].replace(/[._]/g, ' '),
         email: email,
-        role: email.includes('admin') ? 'admin' : (email.includes('staff') || email.startsWith('STF') ? 'staff' : 'student'),
-        department: 'Block B-304'
+        staffId: detectedRole === 'staff' ? email : '',
+        role: detectedRole,
+        department: detectedRole === 'staff' ? 'Maintenance' : (detectedRole === 'admin' ? 'Administration' : 'Block B-304')
       };
 
       try {
@@ -768,7 +777,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js?v=60"></script>
-  <script src="/js/app.js?v=60"></script>
+  <script src="/js/api.js?v=70"></script>
+  <script src="/js/app.js?v=70"></script>
 </body>
 </html>
