@@ -256,6 +256,108 @@ document.addEventListener('DOMContentLoaded', () => {
   if (tabLoginBtn) tabLoginBtn.addEventListener('click', () => switchAuthTab('login'));
   if (tabRegisterBtn) tabRegisterBtn.addEventListener('click', () => switchAuthTab('register'));
 
+  window.selectRegRole = function(role) {
+    const regRoleInput = document.getElementById('regRole');
+    const regEmailLabel = document.getElementById('regEmailLabel');
+    const regEmailInput = document.getElementById('regEmail');
+    const regEmailIcon = document.getElementById('regEmailIcon');
+    const deptFormGroup = document.getElementById('deptFormGroup');
+    const regDeptLabel = document.getElementById('regDeptLabel');
+    const regDeptInput = document.getElementById('regDept');
+
+    const cardStudent = document.getElementById('roleCardStudent');
+    const cardStaff = document.getElementById('roleCardStaff');
+    const cardAdmin = document.getElementById('roleCardAdmin');
+
+    if (cardStudent) cardStudent.className = 'role-card-option';
+    if (cardStaff) cardStaff.className = 'role-card-option';
+    if (cardAdmin) cardAdmin.className = 'role-card-option';
+
+    if (regRoleInput) regRoleInput.value = role;
+
+    if (role === 'staff') {
+      if (cardStaff) cardStaff.className = 'role-card-option selected';
+      if (regEmailLabel) regEmailLabel.textContent = 'Staff Unique ID (Numbers Only)';
+      if (regEmailInput) {
+        regEmailInput.placeholder = 'e.g. 101 or 5001';
+        regEmailInput.type = 'number';
+        regEmailInput.setAttribute('inputmode', 'numeric');
+      }
+      if (regEmailIcon) regEmailIcon.className = 'fa-solid fa-hashtag';
+      if (deptFormGroup) deptFormGroup.style.display = 'none';
+    } else if (role === 'admin') {
+      if (cardAdmin) cardAdmin.className = 'role-card-option selected';
+      if (regEmailLabel) regEmailLabel.textContent = 'Admin Email';
+      if (regEmailInput) {
+        regEmailInput.placeholder = 'e.g. admin@campus.edu';
+        regEmailInput.type = 'email';
+        regEmailInput.removeAttribute('inputmode');
+      }
+      if (regEmailIcon) regEmailIcon.className = 'fa-solid fa-user-shield';
+      if (deptFormGroup) deptFormGroup.style.display = 'block';
+      if (regDeptLabel) regDeptLabel.textContent = 'Admin Office / Department';
+      if (regDeptInput) regDeptInput.placeholder = 'e.g. Chief Warden Office, IT Admin';
+    } else {
+      if (cardStudent) cardStudent.className = 'role-card-option selected';
+      if (regEmailLabel) regEmailLabel.textContent = 'University Email';
+      if (regEmailInput) {
+        regEmailInput.placeholder = 'e.g. student@campus.edu';
+        regEmailInput.type = 'email';
+        regEmailInput.removeAttribute('inputmode');
+      }
+      if (regEmailIcon) regEmailIcon.className = 'fa-regular fa-envelope';
+      if (deptFormGroup) deptFormGroup.style.display = 'block';
+      if (regDeptLabel) regDeptLabel.textContent = 'Hostel Block / Room No';
+      if (regDeptInput) regDeptInput.placeholder = 'e.g. Hostel Block B-304';
+    }
+  };
+
+  window.selectLoginRole = function(role) {
+    const loginRoleInput = document.getElementById('loginRole');
+    const loginEmailLabel = document.getElementById('loginEmailLabel');
+    const loginEmailInput = document.getElementById('loginEmail');
+    const loginEmailIcon = document.getElementById('loginEmailIcon');
+
+    const cardStudent = document.getElementById('loginCardStudent');
+    const cardStaff = document.getElementById('loginCardStaff');
+    const cardAdmin = document.getElementById('loginCardAdmin');
+
+    if (cardStudent) cardStudent.className = 'role-card-option';
+    if (cardStaff) cardStaff.className = 'role-card-option';
+    if (cardAdmin) cardAdmin.className = 'role-card-option';
+
+    if (loginRoleInput) loginRoleInput.value = role;
+
+    if (role === 'staff') {
+      if (cardStaff) cardStaff.className = 'role-card-option selected';
+      if (loginEmailLabel) loginEmailLabel.textContent = 'Staff Unique ID (Numbers Only)';
+      if (loginEmailInput) {
+        loginEmailInput.placeholder = 'e.g. 101 or 23';
+        loginEmailInput.type = 'number';
+        loginEmailInput.setAttribute('inputmode', 'numeric');
+      }
+      if (loginEmailIcon) loginEmailIcon.className = 'fa-solid fa-hashtag';
+    } else if (role === 'admin') {
+      if (cardAdmin) cardAdmin.className = 'role-card-option selected';
+      if (loginEmailLabel) loginEmailLabel.textContent = 'Admin Email / ID';
+      if (loginEmailInput) {
+        loginEmailInput.placeholder = 'e.g. admin@campus.edu';
+        loginEmailInput.type = 'text';
+        loginEmailInput.removeAttribute('inputmode');
+      }
+      if (loginEmailIcon) loginEmailIcon.className = 'fa-solid fa-user-shield';
+    } else {
+      if (cardStudent) cardStudent.className = 'role-card-option selected';
+      if (loginEmailLabel) loginEmailLabel.textContent = 'Campus Email';
+      if (loginEmailInput) {
+        loginEmailInput.placeholder = 'e.g. student@campus.edu';
+        loginEmailInput.type = 'email';
+        loginEmailInput.removeAttribute('inputmode');
+      }
+      if (loginEmailIcon) loginEmailIcon.className = 'fa-regular fa-envelope';
+    }
+  };
+
   // Handle Login Form Submit (Global Window Handler)
   window.handleLoginSubmit = async function(e) {
     if (e) e.preventDefault();
