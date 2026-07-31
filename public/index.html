@@ -22,8 +22,10 @@
         var userStr = localStorage.getItem('complaint_user');
         if (userStr && userStr !== 'null') {
           var user = JSON.parse(userStr);
-          if (user && user.email && user.role) {
+          if (user && (user.email || user.staffId) && user.role) {
             document.documentElement.classList.add('user-logged-in');
+          } else {
+            localStorage.removeItem('complaint_user');
           }
         }
       } catch(e) {}
@@ -78,21 +80,21 @@
 
       if (role === 'staff') {
         if (cardStaff) cardStaff.className = 'role-card-option selected';
-        if (regEmailLabel) regEmailLabel.innerText = 'Staff Unique ID';
+        if (regEmailLabel) regEmailLabel.innerText = 'Staff Unique ID (Numbers Only)';
         if (regEmailInput) {
-          regEmailInput.placeholder = 'e.g. STF-101 / EMP-502';
-          regEmailInput.type = 'text';
+          regEmailInput.placeholder = 'e.g. 101 or 5001';
+          regEmailInput.type = 'number';
+          regEmailInput.setAttribute('inputmode', 'numeric');
         }
-        if (regEmailIcon) regEmailIcon.className = 'fa-solid fa-id-card';
-        if (deptFormGroup) deptFormGroup.style.display = 'block';
-        if (regDeptLabel) regDeptLabel.innerText = 'Department / Specialization';
-        if (regDeptInput) regDeptInput.placeholder = 'e.g. Electrical, Plumbing, IT Support';
+        if (regEmailIcon) regEmailIcon.className = 'fa-solid fa-hashtag';
+        if (deptFormGroup) deptFormGroup.style.display = 'none';
       } else if (role === 'admin') {
         if (cardAdmin) cardAdmin.className = 'role-card-option selected';
         if (regEmailLabel) regEmailLabel.innerText = 'Admin Email';
         if (regEmailInput) {
           regEmailInput.placeholder = 'e.g. admin@campus.edu';
           regEmailInput.type = 'email';
+          regEmailInput.removeAttribute('inputmode');
         }
         if (regEmailIcon) regEmailIcon.className = 'fa-solid fa-user-shield';
         if (deptFormGroup) deptFormGroup.style.display = 'block';
@@ -104,6 +106,7 @@
         if (regEmailInput) {
           regEmailInput.placeholder = 'e.g. student@campus.edu';
           regEmailInput.type = 'email';
+          regEmailInput.removeAttribute('inputmode');
         }
         if (regEmailIcon) regEmailIcon.className = 'fa-regular fa-envelope';
         if (deptFormGroup) deptFormGroup.style.display = 'block';
@@ -111,162 +114,6 @@
         if (regDeptInput) regDeptInput.placeholder = 'e.g. Hostel Block B-304';
       }
     }
-    window.handleLoginSubmit = async function(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      var emailInput = document.getElementById('loginEmail');
-      var passInput = document.getElementById('loginPassword');
-      var email = emailInput ? emailInput.value.trim() : '';
-      var password = passInput ? passInput.value : '';
-
-      if (!email || !password) {
-        var alertBox = document.getElementById('authAlert');
-        if (alertBox) {
-          alertBox.className = 'alert alert-error';
-          alertBox.textContent = 'Please enter Email/ID and Password.';
-          alertBox.style.display = 'block';
-        }
-        return false;
-      }
-
-      var lowerEmail = email.toLowerCase();
-      var storedRole = sessionStorage.getItem('reg_user_role_' + lowerEmail);
-      var storedName = sessionStorage.getItem('reg_user_name_' + lowerEmail);
-      var storedDept = sessionStorage.getItem('reg_user_dept_' + lowerEmail);
-
-      var detectedRole = storedRole || 'student';
-      if (!storedRole) {
-        if (lowerEmail.includes('admin') || lowerEmail.includes('adm')) {
-          detectedRole = 'admin';
-        } else if (lowerEmail.includes('staff') || lowerEmail.startsWith('stf') || lowerEmail.startsWith('emp') || lowerEmail.includes('tech')) {
-          detectedRole = 'staff';
-        }
-      }
-
-      var userObj = {
-        id: 'usr_' + Date.now(),
-        name: storedName || (email.split('@')[0].replace(/[._]/g, ' ')),
-        email: email,
-        staffId: detectedRole === 'staff' ? email : '',
-        role: detectedRole,
-        department: storedDept || (detectedRole === 'staff' ? 'Maintenance' : (detectedRole === 'admin' ? 'Administration' : 'Block B-304'))
-      };
-
-      try {
-        var res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email, password: password })
-        });
-        var data = await res.json();
-        if (data && data.success && data.user) {
-          userObj = data.user;
-          localStorage.setItem('complaint_user', JSON.stringify(userObj));
-          if (typeof showDashboard === 'function') {
-            showDashboard();
-          } else if (window.showDashboard) {
-            window.showDashboard();
-          }
-        }
-      } catch(err) {
-        console.warn('Login fetch fallback:', err);
-      }
-
-      localStorage.setItem('complaint_user', JSON.stringify(userObj));
-      document.documentElement.classList.add('user-logged-in');
-
-      var authViewEl = document.getElementById('authView');
-      var dashboardViewEl = document.getElementById('dashboardView');
-      var userBadgeEl = document.getElementById('userBadge');
-      var logoutBtnEl = document.getElementById('logoutBtn');
-
-      if (authViewEl) authViewEl.style.display = 'none';
-      if (dashboardViewEl) dashboardViewEl.style.display = 'block';
-      if (userBadgeEl) userBadgeEl.style.display = 'flex';
-      if (logoutBtnEl) logoutBtnEl.style.display = 'inline-flex';
-
-      if (typeof showDashboard === 'function') {
-        showDashboard();
-      } else if (window.showDashboard) {
-        window.showDashboard();
-      }
-      return false;
-    };
-
-    window.handleRegisterSubmit = async function(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      var regNameInput = document.getElementById('regName');
-      var regEmailInput = document.getElementById('regEmail');
-      var regPasswordInput = document.getElementById('regPassword');
-      var regRoleInput = document.getElementById('regRole');
-      var regDeptInput = document.getElementById('regDept');
-
-      var name = regNameInput ? regNameInput.value.trim() : '';
-      var email = regEmailInput ? regEmailInput.value.trim() : '';
-      var password = regPasswordInput ? regPasswordInput.value : '';
-      var role = regRoleInput ? regRoleInput.value : 'student';
-      var department = regDeptInput ? regDeptInput.value.trim() : '';
-
-      if (!name || !email || !password) {
-        var alertBox = document.getElementById('authAlert');
-        if (alertBox) {
-          alertBox.className = 'alert alert-error';
-          alertBox.textContent = 'Please enter Full Name, Email/ID, and Password.';
-          alertBox.style.display = 'block';
-        }
-        return false;
-      }
-
-      try {
-        sessionStorage.setItem('reg_user_role_' + email.toLowerCase(), role);
-        sessionStorage.setItem('reg_user_name_' + email.toLowerCase(), name);
-        sessionStorage.setItem('reg_user_dept_' + email.toLowerCase(), department);
-
-        await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name, email: email, password: password, role: role, department: department })
-        });
-      } catch(err) {
-        console.warn('Register fetch fallback:', err);
-      }
-
-      var rForm = document.getElementById('registerForm');
-      if (rForm) rForm.reset();
-
-      if (window.switchAuthTab) window.switchAuthTab('login');
-
-      var loginEmailInput = document.getElementById('loginEmail');
-      if (loginEmailInput) loginEmailInput.value = email;
-
-      var loginPasswordInput = document.getElementById('loginPassword');
-      if (loginPasswordInput) {
-        loginPasswordInput.value = '';
-        loginPasswordInput.focus();
-      }
-
-      var alertBox = document.getElementById('authAlert');
-      if (alertBox) {
-        alertBox.className = 'alert alert-success';
-        alertBox.textContent = 'Account created successfully! Please enter your password to sign in.';
-        alertBox.style.display = 'block';
-      }
-      return false;
-    };
-
-    window.handleLogoutSubmit = function() {
-      try {
-        localStorage.removeItem('complaint_user');
-        sessionStorage.clear();
-      } catch(e) {}
-      document.documentElement.classList.remove('user-logged-in');
-      window.location.href = '/';
-    };
   </script>
 </head>
 <body>
@@ -317,8 +164,14 @@
       <button class="btn btn-secondary btn-sm" id="logoutBtn" style="display: none;" onclick="handleLogoutSubmit()">
         <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
       </button>
-    </div>
   </nav>
+
+  <!-- Role-Based Module Sub-Navbar (visible post-login) -->
+  <div class="module-nav-container" id="moduleNavContainer" style="display: none;">
+    <div class="module-nav-wrapper" id="moduleNavTabs">
+      <!-- Injected dynamically by JS based on user role -->
+    </div>
+  </div>
 
   <!-- Application Container -->
   <main class="app-container">
@@ -542,6 +395,30 @@
       <!-- Complaints Cards Grid -->
       <div class="complaints-grid" id="complaintsContainer">
         <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Staff Management Section (Admin Only) -->
+      <div id="staffManagementSection" style="display: none; margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);"><i class="fa-solid fa-users-gear" style="color: var(--primary);"></i> Staff & Technicians Roster</h3>
+          <span class="role-tag staff" id="staffCountBadge">0 Staff Members</span>
+        </div>
+        <div class="staff-cards-grid" id="staffContainer"></div>
+      </div>
+
+      <!-- Student Management Section (Admin Only) -->
+      <div id="studentManagementSection" style="display: none; margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);"><i class="fa-solid fa-user-graduate" style="color: var(--accent-emerald);"></i> Registered Students List</h3>
+          <span class="role-tag student" id="studentCountBadge">0 Students</span>
+        </div>
+        <div class="student-cards-grid" id="studentContainer"></div>
+      </div>
+
+      <!-- Analytics Section (Admin Only) -->
+      <div id="analyticsSection" style="display: none; margin-top: 2rem;">
+        <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.25rem;"><i class="fa-solid fa-chart-pie" style="color: var(--accent-purple);"></i> Campus Complaint Analytics & Reports</h3>
+        <div class="analytics-cards-grid" id="analyticsContainer"></div>
       </div>
 
     </section>

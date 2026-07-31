@@ -6,11 +6,14 @@ const fs = require('fs');
 const {
   getAllComplaints,
   getComplaintsByStudent,
+  getComplaintsByStaff,
   getComplaintByTicketId,
   createComplaint,
   updateComplaintStatus,
   addFeedback,
-  getAllStaff
+  getAllStaff,
+  getAllStudents,
+  getAnalyticsData
 } = require('../services/dataStore');
 
 // Ensure uploads folder exists
@@ -34,17 +37,22 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 } // 50MB
 });
 
-// GET complaints list (role based: student gets own, admin/staff gets all)
+// GET complaints list (role based: student gets own, staff gets assigned/dept, admin gets all)
 router.get('/', async (req, res) => {
   try {
-    const { role, email } = req.query;
+    const { role, email, staffId, department } = req.query;
 
     if (role === 'student' && email) {
       const list = await getComplaintsByStudent(email);
       return res.json({ success: true, complaints: list });
     }
 
-    // Admin & staff get all complaints
+    if (role === 'staff') {
+      const list = await getComplaintsByStaff(email, staffId, department);
+      return res.json({ success: true, complaints: list });
+    }
+
+    // Admin gets all complaints
     const list = await getAllComplaints();
     res.json({ success: true, complaints: list });
   } catch (err) {
@@ -205,6 +213,26 @@ router.get('/meta/staff', async (req, res) => {
     res.json({ success: true, staff: staffList });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to fetch staff list.' });
+  }
+});
+
+// GET list of students for Admin Student Management
+router.get('/meta/students', async (req, res) => {
+  try {
+    const studentList = await getAllStudents();
+    res.json({ success: true, students: studentList });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch student list.' });
+  }
+});
+
+// GET analytics data for Admin Analytics
+router.get('/meta/analytics', async (req, res) => {
+  try {
+    const data = await getAnalyticsData();
+    res.json({ success: true, analytics: data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch analytics.' });
   }
 });
 

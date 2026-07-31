@@ -6,9 +6,8 @@ const { findUserByEmail, createUser } = require('../services/dataStore');
 // ==================== USER REGISTRATION ====================
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role, department } = req.body;
+    const { name, email, password, role, department, rollNumber, hostel, roomNo, phone } = req.body;
 
-    // Validate required fields
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: 'Please enter Name, Email/ID, and Password.' });
     }
@@ -17,23 +16,25 @@ router.post('/register', async (req, res) => {
     const cleanName = name.trim();
     const userRole = role && ['student', 'admin', 'staff'].includes(role) ? role : 'student';
 
-    // Check if user already exists
     const existingUser = await findUserByEmail(cleanEmail);
     if (existingUser) {
-      return res.status(400).json({ success: false, message: 'An account with this Email or Staff ID already exists.' });
+      const label = userRole === 'staff' ? 'Staff Unique ID' : 'Email/ID';
+      return res.status(400).json({ success: false, message: `An account with this ${label} already exists.` });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password.trim(), 10);
 
-    // Save new user
     const newUser = await createUser({
       name: cleanName,
       email: cleanEmail,
       staffId: userRole === 'staff' ? cleanEmail : '',
       password: hashedPassword,
       role: userRole,
-      department: department ? department.trim() : (userRole === 'staff' ? 'Maintenance' : 'General')
+      department: userRole === 'staff' ? 'Technician' : (department ? department.trim() : 'General'),
+      rollNumber: rollNumber || '',
+      hostel: hostel || '',
+      roomNo: roomNo || '',
+      phone: phone || ''
     });
 
     const userPayload = {
@@ -42,7 +43,11 @@ router.post('/register', async (req, res) => {
       email: newUser.email,
       staffId: newUser.staffId || '',
       role: newUser.role,
-      department: newUser.department
+      department: newUser.department,
+      rollNumber: newUser.rollNumber || '',
+      hostel: newUser.hostel || '',
+      roomNo: newUser.roomNo || '',
+      phone: newUser.phone || ''
     };
 
     res.status(201).json({
@@ -85,7 +90,11 @@ router.post('/login', async (req, res) => {
       email: user.email,
       staffId: user.staffId || '',
       role: user.role,
-      department: user.department
+      department: user.department,
+      rollNumber: user.rollNumber || '',
+      hostel: user.hostel || '',
+      roomNo: user.roomNo || '',
+      phone: user.phone || ''
     };
 
     res.json({

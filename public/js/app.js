@@ -273,56 +273,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const res = await API.login(email, password);
-      if (res && res.success) {
+      if (res && res.success && res.user) {
         currentUser = res.user;
+        localStorage.setItem('complaint_user', JSON.stringify(currentUser));
+        document.documentElement.classList.add('user-logged-in');
+        showDashboard();
       } else {
-        const isStaff = email.startsWith('STF') || email.includes('staff');
-        const isAdmin = email.includes('admin');
-        const role = isAdmin ? 'admin' : (isStaff ? 'staff' : 'student');
-        const cleanName = email.split('@')[0].replace(/[._]/g, ' ');
-        currentUser = {
-          id: 'usr_' + Date.now(),
-          name: cleanName.charAt(0).toUpperCase() + cleanName.slice(1),
-          email: email,
-          staffId: isStaff ? email : '',
-          role: role,
-          department: role === 'student' ? 'Block B-304' : (role === 'staff' ? 'Electrical' : 'Admin Dept')
-        };
+        showAlert((res && res.message) ? res.message : 'Invalid Email/ID or Password.', 'error');
       }
     } catch (err) {
-      console.warn('API login fallback active:', err);
-      const isStaff = email.startsWith('STF') || email.includes('staff');
-      const isAdmin = email.includes('admin');
-      const role = isAdmin ? 'admin' : (isStaff ? 'staff' : 'student');
-      const cleanName = email.split('@')[0].replace(/[._]/g, ' ');
-      currentUser = {
-        id: 'usr_' + Date.now(),
-        name: cleanName.charAt(0).toUpperCase() + cleanName.slice(1),
-        email: email,
-        staffId: isStaff ? email : '',
-        role: role,
-        department: role === 'student' ? 'Block B-304' : (role === 'staff' ? 'Electrical' : 'Admin Dept')
-      };
-    }
-
-    // Force Instant Dashboard Display
-    localStorage.setItem('complaint_user', JSON.stringify(currentUser));
-    document.documentElement.classList.add('user-logged-in');
-
-    const authViewEl = document.getElementById('authView');
-    const dashboardViewEl = document.getElementById('dashboardView');
-    const userBadgeEl = document.getElementById('userBadge');
-    const logoutBtnEl = document.getElementById('logoutBtn');
-
-    if (authViewEl) authViewEl.style.display = 'none';
-    if (dashboardViewEl) dashboardViewEl.style.display = 'block';
-    if (userBadgeEl) userBadgeEl.style.display = 'flex';
-    if (logoutBtnEl) logoutBtnEl.style.display = 'inline-flex';
-
-    if (typeof showDashboard === 'function') {
-      showDashboard();
-    } else if (window.showDashboard) {
-      window.showDashboard();
+      console.error('API login error:', err);
+      showAlert('Unable to connect to server. Please try again.', 'error');
     }
   };
 
@@ -341,11 +302,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const email = regEmailInput ? regEmailInput.value.trim() : '';
     const password = regPasswordInput ? regPasswordInput.value : '';
     const role = regRoleInput ? regRoleInput.value : 'student';
-    const department = regDeptInput ? regDeptInput.value.trim() : '';
+    const department = (role === 'staff') ? 'Technician' : (regDeptInput ? regDeptInput.value.trim() : '');
 
     if (!name || !email || !password) {
-      const fieldLabel = role === 'staff' ? 'Staff Unique ID' : 'Email';
+      const fieldLabel = role === 'staff' ? 'Staff Unique ID (Numbers Only)' : 'Email';
       showAlert(`Please enter Full Name, ${fieldLabel}, and Password.`, 'error');
+      return;
+    }
+
+    if (role === 'staff' && !/^\d+$/.test(email)) {
+      showAlert('Staff Unique ID must contain NUMBERS ONLY (e.g. 101, 5001).', 'error');
       return;
     }
 
@@ -353,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const res = await API.register(userData);
-      if (res.success) {
+      if (res && res.success) {
         // Reset signup form
         const rForm = document.getElementById('registerForm');
         if (rForm) rForm.reset();
@@ -373,14 +339,26 @@ document.addEventListener('DOMContentLoaded', () => {
           loginPasswordInput.focus();
         }
 
-        showAlert('Account created successfully! Please enter your password to sign in.', 'success');
+        const successMsg = role === 'staff'
+          ? `Staff Account (ID: ${email}) created successfully! Sign in with your Staff ID & Password.`
+          : 'Account created successfully! Please enter your password to sign in.';
+        showAlert(successMsg, 'success');
       } else {
-        showAlert(res.message || 'Registration failed.', 'error');
+        showAlert((res && res.message) ? res.message : 'Registration failed.', 'error');
       }
     } catch (err) {
       console.error(err);
       showAlert('Error connecting to server.', 'error');
     }
+  };
+
+  // Global Logout Handler
+  window.handleLogoutSubmit = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    localStorage.removeItem('complaint_user');
+    sessionStorage.clear();
+    currentUser = null;
+    showAuth();
   };
 
   // Brand Logo Click Handler
@@ -398,27 +376,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (logoutBtn) {
     logoutBtn.addEventListener('click', (e) => {
-      if (e) e.preventDefault();
-      if (window.handleLogoutSubmit) {
-        window.handleLogoutSubmit();
-      } else {
-        localStorage.removeItem('complaint_user');
-        window.location.href = '/';
-      }
+      handleLogoutSubmit(e);
     });
   }
 
   function showAuth() {
+    currentUser = null;
+    localStorage.removeItem('complaint_user');
     document.documentElement.classList.remove('user-logged-in');
-    authView.style.display = 'block';
-    dashboardView.style.display = 'none';
-    userBadge.style.display = 'none';
-    logoutBtn.style.display = 'none';
+    if (authView) authView.style.display = 'block';
+    if (dashboardView) dashboardView.style.display = 'none';
+    if (userBadge) userBadge.style.display = 'none';
+    if (logoutBtn) logoutBtn.style.display = 'none';
+    const navContainer = document.getElementById('moduleNavContainer');
+    if (navContainer) navContainer.style.display = 'none';
   }
 
   function showDashboard() {
     currentUser = JSON.parse(localStorage.getItem('complaint_user') || 'null');
-    if (!currentUser) return;
+    if (!currentUser || (!currentUser.email && !currentUser.staffId)) {
+      showAuth();
+      return;
+    }
 
     document.documentElement.classList.add('user-logged-in');
 
@@ -478,9 +457,225 @@ document.addEventListener('DOMContentLoaded', () => {
       if (assignedFilter) assignedFilter.style.display = 'none';
     }
 
+    renderModuleTabs();
     loadComplaints();
     if (userRoleStr !== 'student') {
       loadStaffDropdown();
+    }
+  }
+
+  function renderModuleTabs() {
+    const navContainer = document.getElementById('moduleNavContainer');
+    const tabsWrapper = document.getElementById('moduleNavTabs');
+    if (!navContainer || !tabsWrapper || !currentUser) return;
+
+    navContainer.style.display = 'flex';
+    const role = (currentUser.role || 'student').toLowerCase();
+
+    let tabs = [];
+    if (role === 'student') {
+      tabs = [
+        { id: 'tab-dash', icon: 'fa-house', label: 'Dashboard' },
+        { id: 'tab-raise', icon: 'fa-circle-plus', label: 'Raise Complaint' },
+        { id: 'tab-my-complaints', icon: 'fa-list-check', label: 'My Complaints' },
+        { id: 'tab-chat', icon: 'fa-comments', label: 'Support Chat' },
+        { id: 'tab-notif', icon: 'fa-bell', label: 'Notifications' },
+        { id: 'tab-profile', icon: 'fa-user', label: 'Profile' }
+      ];
+    } else if (role === 'staff') {
+      tabs = [
+        { id: 'tab-dash', icon: 'fa-house', label: 'Dashboard' },
+        { id: 'tab-assigned', icon: 'fa-user-gear', label: 'Assigned Complaints' },
+        { id: 'tab-update', icon: 'fa-wrench', label: 'Update Status & Notes' },
+        { id: 'tab-chat', icon: 'fa-comments', label: 'Chat' },
+        { id: 'tab-notif', icon: 'fa-bell', label: 'Notifications' },
+        { id: 'tab-profile', icon: 'fa-user', label: 'Profile' }
+      ];
+    } else if (role === 'admin') {
+      tabs = [
+        { id: 'tab-dash', icon: 'fa-house', label: 'Dashboard' },
+        { id: 'tab-all-complaints', icon: 'fa-list', label: 'All Complaints' },
+        { id: 'tab-assign', icon: 'fa-user-check', label: 'Assign Complaints' },
+        { id: 'tab-staff-mgmt', icon: 'fa-users-gear', label: 'Manage Staff' },
+        { id: 'tab-student-mgmt', icon: 'fa-user-graduate', label: 'Manage Students' },
+        { id: 'tab-analytics', icon: 'fa-chart-pie', label: 'Analytics & Reports' },
+        { id: 'tab-notif', icon: 'fa-bell', label: 'Notifications' }
+      ];
+    }
+
+    tabsWrapper.innerHTML = tabs.map((t, idx) => `
+      <button type="button" class="module-tab-btn ${idx === 0 ? 'active' : ''}" id="${t.id}" onclick="switchModuleTab('${t.id}')">
+        <i class="fa-solid ${t.icon}"></i> ${t.label}
+      </button>
+    `).join('');
+  }
+
+  window.switchModuleTab = function(tabId) {
+    document.querySelectorAll('.module-tab-btn').forEach(btn => btn.classList.remove('active'));
+    const clickedBtn = document.getElementById(tabId);
+    if (clickedBtn) clickedBtn.classList.add('active');
+
+    const staffSec = document.getElementById('staffManagementSection');
+    const studentSec = document.getElementById('studentManagementSection');
+    const analyticsSec = document.getElementById('analyticsSection');
+    const complaintsGrid = document.getElementById('complaintsContainer');
+    const controlsBar = document.querySelector('.controls-bar');
+    const statsGrid = document.querySelector('.stats-grid');
+
+    if (staffSec) staffSec.style.display = 'none';
+    if (studentSec) studentSec.style.display = 'none';
+    if (analyticsSec) analyticsSec.style.display = 'none';
+    if (complaintsGrid) complaintsGrid.style.display = 'grid';
+    if (controlsBar) controlsBar.style.display = 'flex';
+    if (statsGrid) statsGrid.style.display = 'grid';
+
+    if (tabId === 'tab-raise') {
+      if (raiseModal) raiseModal.classList.add('active');
+    } else if (tabId === 'tab-profile') {
+      if (profileModal) profileModal.classList.add('active');
+    } else if (tabId === 'tab-notif') {
+      const bell = document.getElementById('notifBellBtn');
+      if (bell) bell.click();
+    } else if (tabId === 'tab-chat') {
+      if (complaintsList.length > 0) {
+        openDetailModal(complaintsList[0].ticketId);
+      } else {
+        alert('No complaints found to open chat.');
+      }
+    } else if (tabId === 'tab-staff-mgmt') {
+      if (complaintsGrid) complaintsGrid.style.display = 'none';
+      if (controlsBar) controlsBar.style.display = 'none';
+      if (staffSec) staffSec.style.display = 'block';
+      loadStaffManagement();
+    } else if (tabId === 'tab-student-mgmt') {
+      if (complaintsGrid) complaintsGrid.style.display = 'none';
+      if (controlsBar) controlsBar.style.display = 'none';
+      if (studentSec) studentSec.style.display = 'block';
+      loadStudentManagement();
+    } else if (tabId === 'tab-analytics') {
+      if (complaintsGrid) complaintsGrid.style.display = 'none';
+      if (controlsBar) controlsBar.style.display = 'none';
+      if (analyticsSec) analyticsSec.style.display = 'block';
+      loadAnalyticsView();
+    } else if (tabId === 'tab-assigned' || tabId === 'tab-update') {
+      const stFilter = document.getElementById('statusFilter');
+      if (stFilter) stFilter.value = 'Assigned';
+      renderComplaintsGrid();
+    } else if (tabId === 'tab-assign') {
+      const stFilter = document.getElementById('statusFilter');
+      if (stFilter) stFilter.value = 'Pending';
+      renderComplaintsGrid();
+    } else {
+      const stFilter = document.getElementById('statusFilter');
+      if (stFilter) stFilter.value = 'ALL';
+      renderComplaintsGrid();
+    }
+  };
+
+  async function loadStaffManagement() {
+    try {
+      const res = await API.getStaffList();
+      const container = document.getElementById('staffContainer');
+      const badge = document.getElementById('staffCountBadge');
+      if (!res.success || !container) return;
+
+      const staff = res.staff || [];
+      if (badge) badge.textContent = `${staff.length} Staff Members`;
+
+      if (staff.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; color: var(--text-muted); text-align: center; padding: 2rem;">No staff registered yet.</div>`;
+        return;
+      }
+
+      container.innerHTML = staff.map(s => `
+        <div class="user-manage-card">
+          <div class="user-manage-avatar">${(s.name || 'S').charAt(0).toUpperCase()}</div>
+          <div class="user-manage-info">
+            <h4>${escapeHTML(s.name)}</h4>
+            <p><i class="fa-solid fa-id-card"></i> ID: <strong>${escapeHTML(s.staffId || s.email)}</strong></p>
+            <p><i class="fa-solid fa-building"></i> Dept: ${escapeHTML(s.department || 'General')}</p>
+            <span class="role-tag staff" style="font-size: 0.7rem;">STAFF</span>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error('Load staff error:', err);
+    }
+  }
+
+  async function loadStudentManagement() {
+    try {
+      const res = await API.getStudentList();
+      const container = document.getElementById('studentContainer');
+      const badge = document.getElementById('studentCountBadge');
+      if (!res.success || !container) return;
+
+      const students = res.students || [];
+      if (badge) badge.textContent = `${students.length} Students`;
+
+      if (students.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; color: var(--text-muted); text-align: center; padding: 2rem;">No students registered yet.</div>`;
+        return;
+      }
+
+      container.innerHTML = students.map(s => `
+        <div class="user-manage-card">
+          <div class="user-manage-avatar" style="background: rgba(16,185,129,0.1); color: var(--accent-emerald);">${(s.name || 'S').charAt(0).toUpperCase()}</div>
+          <div class="user-manage-info">
+            <h4>${escapeHTML(s.name)}</h4>
+            <p><i class="fa-regular fa-envelope"></i> ${escapeHTML(s.email)}</p>
+            <p><i class="fa-solid fa-building-user"></i> Hostel/Dept: ${escapeHTML(s.department || 'Block B-304')}</p>
+            <span class="role-tag student" style="font-size: 0.7rem;">STUDENT</span>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error('Load students error:', err);
+    }
+  }
+
+  async function loadAnalyticsView() {
+    try {
+      const res = await API.getAnalytics();
+      const container = document.getElementById('analyticsContainer');
+      if (!res.success || !container) return;
+
+      const data = res.analytics;
+      const cats = data.categories || {};
+      const counts = data.counts || {};
+
+      let html = `
+        <div class="analytics-card">
+          <div class="analytics-card-title">Total System Complaints</div>
+          <div class="analytics-card-value">${data.total}</div>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Recorded in database</p>
+        </div>
+        <div class="analytics-card">
+          <div class="analytics-card-title">Avg Resolution Speed</div>
+          <div class="analytics-card-value" style="color: var(--accent-emerald);">${data.avgResolutionTime}</div>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Turnaround time</p>
+        </div>
+      `;
+
+      Object.keys(cats).forEach(cat => {
+        const pct = cats[cat];
+        const cnt = counts[cat] || 0;
+        html += `
+          <div class="analytics-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.4rem;">
+              <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">${cat}</span>
+              <span style="font-size: 0.8rem; font-weight: 800; color: var(--primary);">${cnt} (${pct}%)</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: ${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    } catch (err) {
+      console.error('Load analytics error:', err);
     }
   }
 
@@ -498,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==================== LOAD & RENDER COMPLAINTS ====================
   async function loadComplaints() {
     try {
-      const res = await API.getComplaints(currentUser.role, currentUser.email);
+      const res = await API.getComplaints(currentUser.role, currentUser.email, currentUser.staffId, currentUser.department);
       if (res.success) {
         complaintsList = res.complaints;
         updateStats();

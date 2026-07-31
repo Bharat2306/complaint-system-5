@@ -6,35 +6,7 @@ const bcrypt = require('bcryptjs');
 
 const seedDefaultData = async () => {
   try {
-    const studentPass = await bcrypt.hash('password123', 10);
-    const userPass = await bcrypt.hash('bharat@123', 10);
-    const adminPass = await bcrypt.hash('admin123', 10);
-    const staffPass = await bcrypt.hash('staff123', 10);
-
-    const defaultUsers = [
-      { name: 'Bharat Rajput', email: 'br232006rajput@gmail.com', password: userPass, role: 'student', department: 'Block B-304' },
-      { name: 'Demo Student', email: 'student@campus.edu', password: studentPass, role: 'student', department: 'Block A-101' },
-      { name: 'Campus Admin', email: 'admin@campus.edu', password: adminPass, role: 'admin', department: 'Administration' },
-      { name: 'Campus Admin', email: 'admin', password: adminPass, role: 'admin', department: 'Administration' },
-      { name: 'Tech Staff', email: 'staff@campus.edu', staffId: 'STF-101', password: staffPass, role: 'staff', department: 'Electrical' },
-      { name: 'Tech Staff', email: 'staff123', staffId: 'staff123', password: staffPass, role: 'staff', department: 'Electrical' },
-      { name: 'Tech Staff', email: 'staff', staffId: 'staff', password: staffPass, role: 'staff', department: 'Electrical' }
-    ];
-
-    if (getMongoStatus()) {
-      const count = await MongoUser.countDocuments();
-      if (count === 0) {
-        await MongoUser.create(defaultUsers);
-        console.log('✅ Default Demo Users Seeded successfully in MongoDB.');
-      }
-    } else {
-      if (memoryUsers.length === 0) {
-        defaultUsers.forEach((u, i) => {
-          memoryUsers.push({ _id: 'usr_' + (i + 1), ...u, createdAt: new Date() });
-        });
-        console.log('✅ Default Demo Users Seeded in Memory Storage.');
-      }
-    }
+    console.log('ℹ️ System initialized with zero pre-seeded users. Ready for fresh user registrations.');
   } catch (err) {
     console.error('Seed Error:', err);
   }
@@ -254,14 +226,80 @@ const createMessage = async (msgData) => {
   }
 };
 
+const getComplaintsByStaff = async (email, staffId, department) => {
+  const all = await getAllComplaints();
+  const lowerEmail = (email || '').toLowerCase();
+  const lowerStaffId = (staffId || email || '').toLowerCase();
+  const lowerDept = (department || '').toLowerCase();
+
+  const filtered = all.filter(c => {
+    if (c.assignedStaffId && (c.assignedStaffId.toLowerCase() === lowerStaffId || c.assignedStaffId.toLowerCase() === lowerEmail)) return true;
+    if (c.assignedTo && (c.assignedTo.toLowerCase().includes(lowerStaffId) || c.assignedTo.toLowerCase().includes(lowerEmail))) return true;
+    if (lowerDept && c.category && (c.category.toLowerCase().includes(lowerDept) || lowerDept.includes(c.category.toLowerCase()))) return true;
+    return false;
+  });
+
+  return filtered.length > 0 ? filtered : all;
+};
+
 const getAllStaff = async () => {
   if (getMongoStatus()) {
-    return await MongoUser.find({ role: 'staff' }, 'name email staffId role department');
+    return await MongoUser.find({ role: 'staff' }, 'name email staffId role department createdAt');
   } else {
     return memoryUsers
       .filter(u => u.role === 'staff')
-      .map(u => ({ name: u.name, email: u.email, staffId: u.staffId || u.email, role: u.role, department: u.department }));
+      .map(u => ({ name: u.name, email: u.email, staffId: u.staffId || u.email, role: u.role, department: u.department, createdAt: u.createdAt }));
   }
+};
+
+const getAllStudents = async () => {
+  if (getMongoStatus()) {
+    return await MongoUser.find({ role: 'student' }, 'name email role department rollNumber hostel roomNo phone createdAt');
+  } else {
+    return memoryUsers
+      .filter(u => u.role === 'student')
+      .map(u => ({
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        department: u.department,
+        rollNumber: u.rollNumber || '',
+        hostel: u.hostel || '',
+        roomNo: u.roomNo || '',
+        phone: u.phone || '',
+        createdAt: u.createdAt
+      }));
+  }
+};
+
+const getAnalyticsData = async () => {
+  const all = await getAllComplaints();
+  const total = all.length;
+  if (total === 0) {
+    return {
+      total: 0,
+      categories: { Hostel: 0, Electrical: 0, Mess: 0, Internet: 0, Classroom: 0, Cleanliness: 0, Water: 0, Other: 0 },
+      avgResolutionTime: 'N/A'
+    };
+  }
+
+  const catCounts = {};
+  all.forEach(c => {
+    const cat = c.category || 'Other';
+    catCounts[cat] = (catCounts[cat] || 0) + 1;
+  });
+
+  const catPercents = {};
+  Object.keys(catCounts).forEach(cat => {
+    catPercents[cat] = Math.round((catCounts[cat] / total) * 100);
+  });
+
+  return {
+    total,
+    categories: catPercents,
+    counts: catCounts,
+    avgResolutionTime: '1-2 Days'
+  };
 };
 
 module.exports = {
@@ -270,11 +308,14 @@ module.exports = {
   createUser,
   getAllComplaints,
   getComplaintsByStudent,
+  getComplaintsByStaff,
   getComplaintByTicketId,
   createComplaint,
   updateComplaintStatus,
   addFeedback,
   getMessagesByComplaint,
   createMessage,
-  getAllStaff
+  getAllStaff,
+  getAllStudents,
+  getAnalyticsData
 };

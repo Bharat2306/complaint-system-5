@@ -23,8 +23,12 @@ const API = {
   },
 
   // Complaints APIs
-  getComplaints: async (role, email) => {
-    const query = new URLSearchParams({ role, email }).toString();
+  getComplaints: async (role, email, staffId, department) => {
+    const params = { role: role || '' };
+    if (email) params.email = email;
+    if (staffId) params.staffId = staffId;
+    if (department) params.department = department;
+    const query = new URLSearchParams(params).toString();
     const res = await fetch(`${API_BASE}/complaints?${query}`);
     return await res.json();
   },
@@ -71,6 +75,16 @@ const API = {
 
   getStaffList: async () => {
     const res = await fetch(`${API_BASE}/complaints/meta/staff`);
+    return await res.json();
+  },
+
+  getStudentList: async () => {
+    const res = await fetch(`${API_BASE}/complaints/meta/students`);
+    return await res.json();
+  },
+
+  getAnalytics: async () => {
+    const res = await fetch(`${API_BASE}/complaints/meta/analytics`);
     return await res.json();
   },
 
