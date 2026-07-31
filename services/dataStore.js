@@ -6,7 +6,84 @@ const bcrypt = require('bcryptjs');
 
 const seedDefaultData = async () => {
   try {
-    console.log('ℹ️ System ready for user registrations.');
+    const studentPass = await bcrypt.hash('student123', 10);
+    const staffPass = await bcrypt.hash('staff123', 10);
+    const adminPass = await bcrypt.hash('admin123', 10);
+
+    const demoUsers = [
+      {
+        name: 'Aarav Student',
+        email: 'student@campus.edu',
+        password: studentPass,
+        role: 'student',
+        department: 'Hostel Block A-203',
+        roomNumber: '203',
+        hostel: 'Hostel Block A',
+        rollNumber: 'CS2026-042'
+      },
+      {
+        name: 'Rajesh Technician',
+        email: '101',
+        staffId: '101',
+        employeeId: '101',
+        password: staffPass,
+        role: 'staff',
+        department: 'Electrical & Maintenance'
+      },
+      {
+        name: 'Chief Warden Admin',
+        email: 'admin@campus.edu',
+        password: adminPass,
+        role: 'admin',
+        department: 'Chief Warden Office'
+      }
+    ];
+
+    for (const uData of demoUsers) {
+      const existing = await findUserByEmail(uData.email);
+      if (!existing) {
+        await createUser(uData);
+      } else {
+        existing.password = uData.password;
+        existing.role = uData.role;
+        if (existing.save) await existing.save();
+      }
+    }
+
+    const existingComplaints = await getAllComplaints();
+    if (existingComplaints.length === 0) {
+      await createComplaint({
+        studentName: 'Aarav Student',
+        studentEmail: 'student@campus.edu',
+        title: 'Room Fan & Light Not Working',
+        category: 'Electrical',
+        priority: 'High',
+        location: 'Hostel Block A, Room 203',
+        description: 'The ceiling fan in my room stopped working yesterday and light is flickering.'
+      });
+
+      const comp2 = await createComplaint({
+        studentName: 'Aarav Student',
+        studentEmail: 'student@campus.edu',
+        title: 'Water Leakage in Bathroom',
+        category: 'Water Problem',
+        priority: 'Emergency',
+        location: 'Hostel Block A, 2nd Floor Washroom',
+        description: 'Pipeline leakage in the main washroom area.'
+      });
+
+      if (comp2 && comp2.ticketId) {
+        await updateComplaintStatus(comp2.ticketId, {
+          status: 'Assigned',
+          assignedTo: 'Rajesh Technician',
+          assignedStaffId: '101',
+          note: 'Assigned to Rajesh Technician for immediate repair.',
+          updatedBy: 'Chief Warden Admin'
+        });
+      }
+    }
+
+    console.log('✅ Demo accounts & complaints seeded successfully!');
   } catch (err) {
     console.error('Seed Error:', err);
   }
