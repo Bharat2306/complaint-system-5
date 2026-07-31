@@ -358,6 +358,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      window.handleLoginSubmit(e);
+    });
+  }
+
+  if (registerForm) {
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      window.handleRegisterSubmit(e);
+    });
+  }
+
   // Handle Login Form Submit (Global Window Handler)
   window.handleLoginSubmit = async function(e) {
     if (e) e.preventDefault();
