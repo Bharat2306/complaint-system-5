@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 
 const seedDefaultData = async () => {
   try {
-    console.log('ℹ️ System initialized with zero pre-seeded users. Ready for fresh user registrations.');
+    console.log('ℹ️ System ready for user registrations.');
   } catch (err) {
     console.error('Seed Error:', err);
   }
@@ -17,76 +17,98 @@ const findUserByEmail = async (identifier) => {
   if (!identifier) return null;
   const searchKey = identifier.trim().toLowerCase();
 
-  if (getMongoStatus()) {
-    let user = await MongoUser.findOne({
+  try {
+    const user = await MongoUser.findOne({
       $or: [
         { email: searchKey },
         { staffId: searchKey },
-        { staffId: identifier.trim().toUpperCase() }
+        { staffId: identifier.trim().toUpperCase() },
+        { employeeId: searchKey }
       ]
     });
-    return user;
-  } else {
-    return memoryUsers.find(u => {
-      if (!u) return false;
-      const uEmail = (u.email || '').toLowerCase();
-      const uStaffId = (u.staffId || '').toLowerCase();
-      return (
-        uEmail === searchKey ||
-        uStaffId === searchKey ||
-        uStaffId === identifier.trim().toLowerCase()
-      );
-    });
+    if (user) return user;
+  } catch (err) {
+    // Mongo lookup error, check memory
   }
+
+  return memoryUsers.find(u => {
+    if (!u) return false;
+    const uEmail = (u.email || '').toLowerCase();
+    const uStaffId = (u.staffId || '').toLowerCase();
+    const uEmpId = (u.employeeId || '').toLowerCase();
+    return (
+      uEmail === searchKey ||
+      uStaffId === searchKey ||
+      uEmpId === searchKey ||
+      uStaffId === identifier.trim().toLowerCase()
+    );
+  });
 };
 
 const createUser = async (userData) => {
-  if (getMongoStatus()) {
+  let createdUser = null;
+  try {
     const user = new MongoUser(userData);
-    return await user.save();
-  } else {
-    const newUser = {
-      _id: 'usr_' + Date.now(),
-      ...userData,
-      createdAt: new Date()
-    };
-    memoryUsers.push(newUser);
-    return newUser;
+    createdUser = await user.save();
+  } catch (err) {
+    console.error('Mongo createUser error:', err.message);
   }
+
+  const memoryUser = {
+    _id: createdUser ? createdUser._id : 'usr_' + Date.now(),
+    ...userData,
+    createdAt: new Date()
+  };
+  
+  // Keep memory cache updated
+  const existingIdx = memoryUsers.findIndex(u => (u.email || '').toLowerCase() === (userData.email || '').toLowerCase());
+  if (existingIdx >= 0) {
+    memoryUsers[existingIdx] = memoryUser;
+  } else {
+    memoryUsers.push(memoryUser);
+  }
+
+  return createdUser || memoryUser;
 };
 
 const getAllComplaints = async () => {
-  if (getMongoStatus()) {
-    return await MongoComplaint.find().sort({ createdAt: -1 });
-  } else {
-    return [...memoryComplaints].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  try {
+    const complaints = await MongoComplaint.find().sort({ createdAt: -1 });
+    if (complaints && complaints.length > 0) return complaints;
+  } catch (err) {
+    // fallback to memory
   }
+  return [...memoryComplaints].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 };
 
 const getComplaintsByStudent = async (studentEmail) => {
-  if (getMongoStatus()) {
-    return await MongoComplaint.find({ studentEmail: studentEmail }).sort({ createdAt: -1 });
-  } else {
-    return memoryComplaints
-      .filter(c => c.studentEmail === studentEmail)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  try {
+    const complaints = await MongoComplaint.find({ studentEmail: studentEmail }).sort({ createdAt: -1 });
+    if (complaints && complaints.length > 0) return complaints;
+  } catch (err) {
+    // fallback to memory
   }
+  return memoryComplaints
+    .filter(c => c.studentEmail === studentEmail)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 };
 
 const getComplaintByTicketId = async (ticketId) => {
-  if (getMongoStatus()) {
-    return await MongoComplaint.findOne({ ticketId });
-  } else {
-    return memoryComplaints.find(c => c.ticketId === ticketId);
+  try {
+    const comp = await MongoComplaint.findOne({ ticketId });
+    if (comp) return comp;
+  } catch (err) {
+    // fallback to memory
   }
+  return memoryComplaints.find(c => c.ticketId === ticketId);
 };
 
 const createComplaint = async (data) => {
-  // Generate ticket ID
-  const count = getMongoStatus() 
-    ? await MongoComplaint.countDocuments() 
-    : memoryComplaints.length;
-  
+  let count = memoryComplaints.length;
+  try {
+    count = await MongoComplaint.countDocuments();
+  } catch (e) {}
+
   const ticketId = `CMP-${1000 + count + 1}`;
   
   const complaintData = {
@@ -112,94 +134,105 @@ const createComplaint = async (data) => {
     updatedAt: new Date()
   };
 
-  if (getMongoStatus()) {
+  let savedComp = null;
+  try {
     const comp = new MongoComplaint(complaintData);
-    return await comp.save();
-  } else {
-    const newComp = { _id: 'cmp_' + Date.now(), ...complaintData };
-    memoryComplaints.push(newComp);
-    return newComp;
+    savedComp = await comp.save();
+  } catch (err) {
+    console.error('Mongo createComplaint error:', err.message);
   }
+
+  const memoryComp = { _id: savedComp ? savedComp._id : 'cmp_' + Date.now(), ...complaintData };
+  memoryComplaints.unshift(memoryComp);
+
+  return savedComp || memoryComp;
 };
 
 const updateComplaintStatus = async (ticketId, { status, assignedTo, assignedStaffId, note, updatedBy }) => {
   const timestamp = new Date();
   
-  if (getMongoStatus()) {
+  let savedComp = null;
+  try {
     const comp = await MongoComplaint.findOne({ ticketId });
-    if (!comp) return null;
+    if (comp) {
+      if (status) comp.status = status;
+      if (assignedTo) comp.assignedTo = assignedTo;
+      if (assignedStaffId) comp.assignedStaffId = assignedStaffId;
+      
+      comp.timeline.push({
+        status: status || comp.status,
+        updatedBy: updatedBy || 'Admin',
+        note: note || `Status updated to ${status || comp.status}`,
+        timestamp
+      });
+      
+      comp.updatedAt = timestamp;
+      savedComp = await comp.save();
+    }
+  } catch (err) {}
+
+  const memComp = memoryComplaints.find(c => c.ticketId === ticketId);
+  if (memComp) {
+    if (status) memComp.status = status;
+    if (assignedTo) memComp.assignedTo = assignedTo;
+    if (assignedStaffId) memComp.assignedStaffId = assignedStaffId;
     
-    if (status) comp.status = status;
-    if (assignedTo) comp.assignedTo = assignedTo;
-    if (assignedStaffId) comp.assignedStaffId = assignedStaffId;
-    
-    comp.timeline.push({
-      status: status || comp.status,
+    memComp.timeline.push({
+      status: status || memComp.status,
       updatedBy: updatedBy || 'Admin',
-      note: note || `Status updated to ${status || comp.status}`,
+      note: note || `Status updated to ${status || memComp.status}`,
       timestamp
     });
     
-    comp.updatedAt = timestamp;
-    return await comp.save();
-  } else {
-    const comp = memoryComplaints.find(c => c.ticketId === ticketId);
-    if (!comp) return null;
-    
-    if (status) comp.status = status;
-    if (assignedTo) comp.assignedTo = assignedTo;
-    if (assignedStaffId) comp.assignedStaffId = assignedStaffId;
-    
-    comp.timeline.push({
-      status: status || comp.status,
-      updatedBy: updatedBy || 'Admin',
-      note: note || `Status updated to ${status || comp.status}`,
-      timestamp
-    });
-    
-    comp.updatedAt = timestamp;
-    return comp;
+    memComp.updatedAt = timestamp;
   }
+
+  return savedComp || memComp || null;
 };
 
 const addFeedback = async (ticketId, { rating, feedback }) => {
-  if (getMongoStatus()) {
+  let savedComp = null;
+  try {
     const comp = await MongoComplaint.findOne({ ticketId });
-    if (!comp) return null;
-    comp.rating = rating;
-    comp.feedback = feedback;
-    comp.status = 'Closed';
-    comp.timeline.push({
+    if (comp) {
+      comp.rating = rating;
+      comp.feedback = feedback;
+      comp.status = 'Closed';
+      comp.timeline.push({
+        status: 'Closed',
+        updatedBy: comp.studentName,
+        note: `Student left ${rating}★ rating & feedback: "${feedback}"`,
+        timestamp: new Date()
+      });
+      comp.updatedAt = new Date();
+      savedComp = await comp.save();
+    }
+  } catch (err) {}
+
+  const memComp = memoryComplaints.find(c => c.ticketId === ticketId);
+  if (memComp) {
+    memComp.rating = rating;
+    memComp.feedback = feedback;
+    memComp.status = 'Closed';
+    memComp.timeline.push({
       status: 'Closed',
-      updatedBy: comp.studentName,
+      updatedBy: memComp.studentName,
       note: `Student left ${rating}★ rating & feedback: "${feedback}"`,
       timestamp: new Date()
     });
-    comp.updatedAt = new Date();
-    return await comp.save();
-  } else {
-    const comp = memoryComplaints.find(c => c.ticketId === ticketId);
-    if (!comp) return null;
-    comp.rating = rating;
-    comp.feedback = feedback;
-    comp.status = 'Closed';
-    comp.timeline.push({
-      status: 'Closed',
-      updatedBy: comp.studentName,
-      note: `Student left ${rating}★ rating & feedback: "${feedback}"`,
-      timestamp: new Date()
-    });
-    comp.updatedAt = new Date();
-    return comp;
+    memComp.updatedAt = new Date();
   }
+
+  return savedComp || memComp || null;
 };
 
 const getMessagesByComplaint = async (ticketId) => {
-  if (getMongoStatus()) {
-    return await MongoMessage.find({ complaintId: ticketId }).sort({ createdAt: 1 });
-  } else {
-    return memoryMessages.filter(m => m.complaintId === ticketId).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-  }
+  try {
+    const msgs = await MongoMessage.find({ complaintId: ticketId }).sort({ createdAt: 1 });
+    if (msgs && msgs.length > 0) return msgs;
+  } catch (err) {}
+
+  return memoryMessages.filter(m => m.complaintId === ticketId).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 };
 
 const createMessage = async (msgData) => {
@@ -207,14 +240,15 @@ const createMessage = async (msgData) => {
     ...msgData,
     createdAt: new Date()
   };
-  if (getMongoStatus()) {
+  let savedMsg = null;
+  try {
     const msg = new MongoMessage(payload);
-    return await msg.save();
-  } else {
-    const newMsg = { _id: 'msg_' + Date.now(), ...payload };
-    memoryMessages.push(newMsg);
-    return newMsg;
-  }
+    savedMsg = await msg.save();
+  } catch (err) {}
+
+  const newMsg = { _id: savedMsg ? savedMsg._id : 'msg_' + Date.now(), ...payload };
+  memoryMessages.push(newMsg);
+  return savedMsg || newMsg;
 };
 
 const getComplaintsByStaff = async (email, staffId, department) => {
@@ -234,33 +268,35 @@ const getComplaintsByStaff = async (email, staffId, department) => {
 };
 
 const getAllStaff = async () => {
-  if (getMongoStatus()) {
-    return await MongoUser.find({ role: 'staff' }, 'name email staffId role department createdAt');
-  } else {
-    return memoryUsers
-      .filter(u => u.role === 'staff')
-      .map(u => ({ name: u.name, email: u.email, staffId: u.staffId || u.email, role: u.role, department: u.department, createdAt: u.createdAt }));
-  }
+  try {
+    const staff = await MongoUser.find({ role: 'staff' }, 'name email staffId role department createdAt');
+    if (staff && staff.length > 0) return staff;
+  } catch (err) {}
+
+  return memoryUsers
+    .filter(u => u.role === 'staff')
+    .map(u => ({ name: u.name, email: u.email, staffId: u.staffId || u.email, role: u.role, department: u.department, createdAt: u.createdAt }));
 };
 
 const getAllStudents = async () => {
-  if (getMongoStatus()) {
-    return await MongoUser.find({ role: 'student' }, 'name email role department rollNumber hostel roomNo phone createdAt');
-  } else {
-    return memoryUsers
-      .filter(u => u.role === 'student')
-      .map(u => ({
-        name: u.name,
-        email: u.email,
-        role: u.role,
-        department: u.department,
-        rollNumber: u.rollNumber || '',
-        hostel: u.hostel || '',
-        roomNo: u.roomNo || '',
-        phone: u.phone || '',
-        createdAt: u.createdAt
-      }));
-  }
+  try {
+    const students = await MongoUser.find({ role: 'student' }, 'name email role department rollNumber hostel roomNo phone createdAt');
+    if (students && students.length > 0) return students;
+  } catch (err) {}
+
+  return memoryUsers
+    .filter(u => u.role === 'student')
+    .map(u => ({
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      department: u.department,
+      rollNumber: u.rollNumber || '',
+      hostel: u.hostel || '',
+      roomNo: u.roomNo || '',
+      phone: u.phone || '',
+      createdAt: u.createdAt
+    }));
 };
 
 const getAnalyticsData = async () => {

@@ -429,26 +429,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const rForm = document.getElementById('registerForm');
         if (rForm) rForm.reset();
 
-        // Redirect UI to Login Tab with registered role auto-selected
-        if (window.switchAuthTab) window.switchAuthTab('login');
-        if (window.selectLoginRole) window.selectLoginRole(role);
-
-        // Pre-fill login email/ID input
-        const loginEmailInput = document.getElementById('loginEmail');
-        if (loginEmailInput) {
-          loginEmailInput.value = email;
+        if (res.user) {
+          currentUser = res.user;
+          localStorage.setItem('complaint_user', JSON.stringify(currentUser));
+          if (res.token) {
+            localStorage.setItem('complaint_token', res.token);
+          }
+          document.documentElement.classList.add('user-logged-in');
+          showDashboard();
+          showAlert(`Welcome, ${currentUser.name}! Account created and signed in successfully.`, 'success');
+        } else {
+          if (window.switchAuthTab) window.switchAuthTab('login');
+          if (window.selectLoginRole) window.selectLoginRole(role);
+          const loginEmailInput = document.getElementById('loginEmail');
+          if (loginEmailInput) loginEmailInput.value = email;
+          showAlert('Account created successfully! Please enter your password to sign in.', 'success');
         }
-
-        const loginPasswordInput = document.getElementById('loginPassword');
-        if (loginPasswordInput) {
-          loginPasswordInput.value = '';
-          loginPasswordInput.focus();
-        }
-
-        const successMsg = role === 'staff'
-          ? `Staff Account (ID: ${email}) created successfully! Sign in with your Staff ID & Password.`
-          : 'Account created successfully! Please enter your password to sign in.';
-        showAlert(successMsg, 'success');
       } else {
         showAlert((res && res.message) ? res.message : 'Registration failed.', 'error');
       }
