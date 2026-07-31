@@ -65,7 +65,7 @@ router.post('/register', async (req, res) => {
 // ==================== USER LOGIN ====================
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Please enter Email/ID and Password.' });
@@ -76,6 +76,11 @@ router.post('/login', async (req, res) => {
 
     if (!user) {
       return res.status(400).json({ success: false, message: 'User not found. Please check your details or Register.' });
+    }
+
+    // Verify role match if specified
+    if (role && user.role !== role) {
+      return res.status(400).json({ success: false, message: `Account found, but it is registered as a ${user.role.toUpperCase()}, not a ${role.toUpperCase()}. Please select the correct account type.` });
     }
 
     // Check password

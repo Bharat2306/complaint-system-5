@@ -4,11 +4,11 @@ const API_BASE = '/api';
 
 const API = {
   // Auth APIs
-  login: async (email, password) => {
+  login: async (email, password, role) => {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password, role })
     });
     return await res.json();
   },

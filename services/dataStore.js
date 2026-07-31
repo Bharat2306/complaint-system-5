@@ -16,34 +16,25 @@ const seedDefaultData = async () => {
 const findUserByEmail = async (identifier) => {
   if (!identifier) return null;
   const searchKey = identifier.trim().toLowerCase();
-  const escapedKey = searchKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
   if (getMongoStatus()) {
     let user = await MongoUser.findOne({
       $or: [
         { email: searchKey },
-        { email: new RegExp('^' + escapedKey + '(@.*)?$', 'i') },
         { staffId: searchKey },
-        { staffId: identifier.trim().toUpperCase() },
-        { staffId: new RegExp('^' + escapedKey + '$', 'i') }
+        { staffId: identifier.trim().toUpperCase() }
       ]
     });
-    if (!user) {
-      user = await MongoUser.findOne({ email: new RegExp(escapedKey, 'i') });
-    }
     return user;
   } else {
     return memoryUsers.find(u => {
       if (!u) return false;
       const uEmail = (u.email || '').toLowerCase();
       const uStaffId = (u.staffId || '').toLowerCase();
-      const emailPrefix = uEmail.split('@')[0];
       return (
         uEmail === searchKey ||
-        emailPrefix === searchKey ||
         uStaffId === searchKey ||
-        uStaffId === identifier.trim().toLowerCase() ||
-        uEmail.includes(searchKey)
+        uStaffId === identifier.trim().toLowerCase()
       );
     });
   }

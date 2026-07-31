@@ -263,8 +263,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const emailInput = document.getElementById('loginEmail');
     const passInput = document.getElementById('loginPassword');
+    const roleInput = document.getElementById('loginRole');
+
     const email = emailInput ? emailInput.value.trim() : '';
     const password = passInput ? passInput.value : '';
+    const role = roleInput ? roleInput.value : 'student';
 
     if (!email || !password) {
       showAlert('Please enter Email/ID and Password.', 'error');
@@ -272,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res = await API.login(email, password);
+      const res = await API.login(email, password, role);
       if (res && res.success && res.user) {
         currentUser = res.user;
         localStorage.setItem('complaint_user', JSON.stringify(currentUser));
@@ -324,8 +327,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const rForm = document.getElementById('registerForm');
         if (rForm) rForm.reset();
 
-        // Redirect UI to Login Tab
+        // Redirect UI to Login Tab with registered role auto-selected
         if (window.switchAuthTab) window.switchAuthTab('login');
+        if (window.selectLoginRole) window.selectLoginRole(role);
 
         // Pre-fill login email/ID input
         const loginEmailInput = document.getElementById('loginEmail');
