@@ -330,11 +330,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (role === 'staff') {
       if (cardStaff) cardStaff.className = 'role-card-option selected';
-      if (loginEmailLabel) loginEmailLabel.textContent = 'Staff Unique ID (Numbers Only)';
+      if (loginEmailLabel) loginEmailLabel.textContent = 'Staff Unique ID / Email';
       if (loginEmailInput) {
-        loginEmailInput.placeholder = 'e.g. 101 or 23';
-        loginEmailInput.type = 'number';
-        loginEmailInput.setAttribute('inputmode', 'numeric');
+        loginEmailInput.placeholder = 'e.g. 101 or STF-101';
+        loginEmailInput.type = 'text';
+        loginEmailInput.removeAttribute('inputmode');
       }
       if (loginEmailIcon) loginEmailIcon.className = 'fa-solid fa-hashtag';
     } else if (role === 'admin') {
@@ -348,10 +348,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (loginEmailIcon) loginEmailIcon.className = 'fa-solid fa-user-shield';
     } else {
       if (cardStudent) cardStudent.className = 'role-card-option selected';
-      if (loginEmailLabel) loginEmailLabel.textContent = 'Campus Email';
+      if (loginEmailLabel) loginEmailLabel.textContent = 'Campus Email / ID';
       if (loginEmailInput) {
         loginEmailInput.placeholder = 'e.g. student@campus.edu';
-        loginEmailInput.type = 'email';
+        loginEmailInput.type = 'text';
         loginEmailInput.removeAttribute('inputmode');
       }
       if (loginEmailIcon) loginEmailIcon.className = 'fa-regular fa-envelope';
@@ -424,13 +424,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const department = (role === 'staff') ? 'Technician' : (regDeptInput ? regDeptInput.value.trim() : '');
 
     if (!name || !email || !password) {
-      const fieldLabel = role === 'staff' ? 'Staff Unique ID (Numbers Only)' : 'Email';
+      const fieldLabel = role === 'staff' ? 'Staff Unique ID / Email' : 'Email';
       showAlert(`Please enter Full Name, ${fieldLabel}, and Password.`, 'error');
-      return;
-    }
-
-    if (role === 'staff' && !/^\d+$/.test(email)) {
-      showAlert('Staff Unique ID must contain NUMBERS ONLY (e.g. 101, 5001).', 'error');
       return;
     }
 

@@ -8,7 +8,7 @@ const mediaSchema = new mongoose.Schema({
 
 const complaintSchema = new mongoose.Schema({
   ticketId: { type: String, required: true, unique: true },
-  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  studentId: { type: mongoose.Schema.Types.Mixed, default: '' },
   studentName: { type: String, default: '' },
   studentEmail: { type: String, default: '' },
   title: { type: String, required: true },

@@ -133,11 +133,11 @@
 
       if (role === 'staff') {
         if (cardStaff) cardStaff.className = 'role-card-option selected';
-        if (loginEmailLabel) loginEmailLabel.innerText = 'Staff Unique ID (Numbers Only)';
+        if (loginEmailLabel) loginEmailLabel.innerText = 'Staff Unique ID / Email';
         if (loginEmailInput) {
-          loginEmailInput.placeholder = 'e.g. 101 or 23';
-          loginEmailInput.type = 'number';
-          loginEmailInput.setAttribute('inputmode', 'numeric');
+          loginEmailInput.placeholder = 'e.g. 101 or STF-101';
+          loginEmailInput.type = 'text';
+          loginEmailInput.removeAttribute('inputmode');
         }
         if (loginEmailIcon) loginEmailIcon.className = 'fa-solid fa-hashtag';
       } else if (role === 'admin') {
@@ -151,10 +151,10 @@
         if (loginEmailIcon) loginEmailIcon.className = 'fa-solid fa-user-shield';
       } else {
         if (cardStudent) cardStudent.className = 'role-card-option selected';
-        if (loginEmailLabel) loginEmailLabel.innerText = 'Campus Email';
+        if (loginEmailLabel) loginEmailLabel.innerText = 'Campus Email / ID';
         if (loginEmailInput) {
           loginEmailInput.placeholder = 'e.g. student@campus.edu';
-          loginEmailInput.type = 'email';
+          loginEmailInput.type = 'text';
           loginEmailInput.removeAttribute('inputmode');
         }
         if (loginEmailIcon) loginEmailIcon.className = 'fa-regular fa-envelope';
