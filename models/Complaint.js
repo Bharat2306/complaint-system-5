@@ -8,20 +8,22 @@ const mediaSchema = new mongoose.Schema({
 
 const complaintSchema = new mongoose.Schema({
   ticketId: { type: String, required: true, unique: true },
-  studentId: { type: String, required: true },
-  studentName: { type: String, required: true },
-  studentEmail: { type: String, required: true },
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  studentName: { type: String, default: '' },
+  studentEmail: { type: String, default: '' },
   title: { type: String, required: true },
+  description: { type: String, required: true },
   category: { type: String, required: true },
   priority: { type: String, enum: ['Low', 'Medium', 'High', 'Emergency'], default: 'Medium' },
   location: { type: String, default: '' },
-  description: { type: String, required: true },
+  image: { type: String, default: '' },
   media: [mediaSchema],
   status: { 
     type: String, 
     enum: ['Pending', 'Assigned', 'In Progress', 'Resolved', 'Closed'], 
     default: 'Pending' 
   },
+  assignedStaff: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   assignedTo: { type: String, default: 'Unassigned' },
   assignedStaffId: { type: String, default: '' },
   timeline: [{
@@ -37,8 +39,6 @@ const complaintSchema = new mongoose.Schema({
 });
 
 const MongoComplaint = mongoose.model('Complaint', complaintSchema);
-
-// In-Memory Storage Fallback
 const memoryComplaints = [];
 
-module.exports = { MongoComplaint, memoryComplaints };
+module.exports = { MongoComplaint, memoryComplaints, Complaint: MongoComplaint };

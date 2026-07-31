@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -5,6 +6,8 @@ const { connectDB, getMongoStatus } = require('./config/db');
 const { seedDefaultData } = require('./services/dataStore');
 
 const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const staffRoutes = require('./routes/staffRoutes');
 const complaintRoutes = require('./routes/complaintRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 
@@ -20,17 +23,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
+// Mount API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/staff', staffRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/chat', chatRoutes);
 
-// Status check API
+// Health Check Endpoint
 app.use('/api/health', (req, res) => {
   res.json({
     status: 'online',
     mongoConnected: getMongoStatus(),
-    storageMode: getMongoStatus() ? 'MongoDB' : 'Memory-Fallback'
+    database: getMongoStatus() ? 'MongoDB Atlas' : 'In-Memory Fallback',
+    timestamp: new Date()
   });
 });
 
@@ -46,13 +52,11 @@ const startServer = async () => {
 
   app.listen(PORT, () => {
     console.log(`
-🚀 Smart Complaint Management System is running!
+🚀 Smart Complaint Management System Backend is running!
 --------------------------------------------------
-📍 Local URL   : http://localhost:${PORT}
-💾 Storage Mode: ${getMongoStatus() ? 'MongoDB (Mongoose)' : 'High-Speed In-Memory (Zero Config)'}
-👤 Student Demo: student@campus.edu / password123
-👑 Admin Demo  : admin@campus.edu / admin123
-🛠 Staff Demo  : staff@campus.edu / staff123
+📍 API Base URL : http://localhost:${PORT}/api
+💾 Database     : ${getMongoStatus() ? 'MongoDB Atlas' : 'In-Memory'}
+🔐 JWT Auth     : Enabled
 --------------------------------------------------
     `);
   });
