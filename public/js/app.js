@@ -27,6 +27,8 @@ window.switchAuthTab = function(tabName) {
     if (title) title.textContent = 'Welcome Back 👋';
     if (subtitle) subtitle.textContent = 'Sign in to access your complaint dashboard';
   }
+};
+
 // Global Role Selector Function (Top-Level Scope)
 window.selectRegRole = function(role) {
   const regRoleInput = document.getElementById('regRole');
@@ -165,15 +167,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  themeToggleBtn.addEventListener('click', () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('complaint_theme', newTheme);
-    updateThemeIcon(newTheme);
-  });
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('complaint_theme', newTheme);
+      updateThemeIcon(newTheme);
+    });
+  }
 
   function updateThemeIcon(theme) {
+    if (!themeToggleBtn) return;
     themeToggleBtn.innerHTML = theme === 'dark' 
       ? '<i class="fa-solid fa-sun" style="color: #f59e0b;"></i>' 
       : '<i class="fa-solid fa-moon"></i>';
