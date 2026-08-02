@@ -6,6 +6,12 @@ const bcrypt = require('bcryptjs');
 
 const seedDefaultData = async () => {
   try {
+    const shouldSeedDemoData = String(process.env.SEED_DEMO_DATA || '').toLowerCase() === 'true';
+    if (!shouldSeedDemoData) {
+      console.log('ℹ️ Demo data seeding is disabled. Starting with a clean empty state.');
+      return;
+    }
+
     const studentPass = await bcrypt.hash('student123', 10);
     const staffPass = await bcrypt.hash('staff123', 10);
     const adminPass = await bcrypt.hash('admin123', 10);
