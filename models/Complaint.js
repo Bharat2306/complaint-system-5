@@ -36,7 +36,7 @@ const complaintSchema = new mongoose.Schema({
   feedback: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
-});
+}, { collection: 'complaints' });
 
 const MongoComplaint = mongoose.model('Complaint', complaintSchema);
 const memoryComplaints = [];

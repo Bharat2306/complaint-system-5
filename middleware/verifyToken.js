@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization || req.headers['authorization'];
+  const authHeader = req.headers.authorization;
   let token = null;
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -21,10 +21,13 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretkey_smart_complaint_2026_jwt');
-    req.user = decoded;
+    req.user = {
+      ...decoded,
+      id: decoded.id || decoded._id
+    };
     next();
-  } catch (err) {
-    console.error('JWT Verification Error:', err.message);
+  } catch (error) {
+    console.error('JWT Verification Error:', error.message);
     return res.status(403).json({
       success: false,
       message: 'Invalid or expired authentication token.'

@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-});
+}, { collection: 'users' });
 
 const MongoUser = mongoose.model('User', userSchema);
 const memoryUsers = [];
