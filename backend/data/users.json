@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Demo Student",
+    "email": "demo@student.com",
+    "password": "1234",
+    "role": "student"
+  },
+  {
+    "name": "Suresh Singh",
+    "email": "suresh@staff.com",
+    "password": "1234",
+    "role": "staff"
+  },
+  {
+    "name": "Ramesh Kumar",
+    "email": "ramesh@staff.com",
+    "password": "1234",
+    "role": "staff"
+  },
+  {
+    "name": "Anita Sharma",
+    "email": "anita@staff.com",
+    "password": "1234",
+    "role": "staff"
+  },
+  {
+    "name": "Vikas Yadav",
+    "email": "vikas@staff.com",
+    "password": "1234",
+    "role": "staff"
+  },
+  {
+    "name": "Hostel Admin",
+    "email": "admin@hostel.com",
+    "password": "1234",
+    "role": "admin"
+  }
+]
